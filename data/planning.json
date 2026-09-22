@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "updatedAt": "2026-09-22T14:23:31.881Z",
+ "updatedAt": "2026-09-22T14:27:55.990Z",
  "updatedBy": "JP",
  "overrides": {},
  "added": [],
@@ -23,9 +23,108 @@
   ],
   "formations-traditionnelles-linkedin-4": [
    "programme"
+  ],
+  "formations-traditionnelles-mailjet-3": [
+   "validee"
+  ],
+  "bouquet-cairn-linkedin-3": [
+   "validee"
+  ],
+  "bouquet-cairn-mailjet-3": [
+   "validee"
+  ],
+  "formations-ia-linkedin-3": [
+   "validee"
+  ],
+  "evaluation-essms-mailjet-3": [
+   "validee"
+  ],
+  "formations-traditionnelles-linkedin-3": [
+   "validee"
+  ],
+  "bouquet-cairn-nouveautes-mailjet-3": [
+   "validee"
+  ],
+  "formations-ia-mailjet-3": [
+   "validee"
+  ],
+  "evaluation-essms-linkedin-3": [
+   "validee"
   ]
  },
  "journal": [
+  {
+   "ts": "2026-09-22T14:27:55.990Z",
+   "auteur": "JP",
+   "type": "statut",
+   "id": "evaluation-essms-linkedin-3",
+   "publication": "Promotion de l'évaluation ESSMS",
+   "detail": "statut : Validée"
+  },
+  {
+   "ts": "2026-09-22T14:27:53.438Z",
+   "auteur": "JP",
+   "type": "statut",
+   "id": "formations-ia-mailjet-3",
+   "publication": "Promotion des formations IA",
+   "detail": "statut : Validée"
+  },
+  {
+   "ts": "2026-09-22T14:27:51.447Z",
+   "auteur": "JP",
+   "type": "statut",
+   "id": "bouquet-cairn-nouveautes-mailjet-3",
+   "publication": "Nouveautés du bouquet Cairn",
+   "detail": "statut : Validée"
+  },
+  {
+   "ts": "2026-09-22T14:27:48.990Z",
+   "auteur": "JP",
+   "type": "statut",
+   "id": "formations-traditionnelles-linkedin-3",
+   "publication": "Promotion des formations traditionnelles",
+   "detail": "statut : Validée"
+  },
+  {
+   "ts": "2026-09-22T14:27:45.992Z",
+   "auteur": "JP",
+   "type": "statut",
+   "id": "evaluation-essms-mailjet-3",
+   "publication": "Promotion de l'évaluation ESSMS",
+   "detail": "statut : Validée"
+  },
+  {
+   "ts": "2026-09-22T14:27:44.135Z",
+   "auteur": "JP",
+   "type": "statut",
+   "id": "formations-ia-linkedin-3",
+   "publication": "Promotion des formations IA",
+   "detail": "statut : Validée"
+  },
+  {
+   "ts": "2026-09-22T14:27:42.595Z",
+   "auteur": "JP",
+   "type": "statut",
+   "id": "bouquet-cairn-mailjet-3",
+   "publication": "Promotion du bouquet Cairn",
+   "detail": "statut : Validée"
+  },
+  {
+   "ts": "2026-09-22T14:27:40.804Z",
+   "auteur": "JP",
+   "type": "statut",
+   "id": "bouquet-cairn-linkedin-3",
+   "publication": "Promotion du bouquet Cairn",
+   "detail": "statut : Validée"
+  },
+  {
+   "ts": "2026-09-22T14:27:38.567Z",
+   "auteur": "JP",
+   "type": "statut",
+   "id": "formations-traditionnelles-mailjet-3",
+   "publication": "Promotion des formations traditionnelles",
+   "detail": "statut : Validée"
+  },
   {
    "ts": "2026-09-22T14:23:31.881Z",
    "auteur": "JP",
