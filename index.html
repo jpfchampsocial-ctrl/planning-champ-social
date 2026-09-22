@@ -1,0 +1,1451 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Champ Social - Planning publications</title>
+<style>
+  :root {
+    --ink: #19202a;
+    --muted: #667085;
+    --line: #d9dee7;
+    --paper: #f7f8fa;
+    --white: #ffffff;
+    --edition: #355C9A;
+    --formations-traditionnelles: #A15C38;
+    --bouquet-cairn: #168078;
+    --evaluation-essms: #7D4E9D;
+    --formations-ia: #B23A48;
+    --st-a-faire: #F97316;
+    --st-programme: #0284C7;
+    --st-a-publier: #CA8A04;
+    --st-a-valider: #DB2777;
+    --st-validee: #16A34A;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: var(--ink); background: var(--paper); line-height: 1.35; }
+  header { background: var(--white); border-bottom: 1px solid var(--line); padding: 24px 32px 20px; }
+  main { padding: 20px 32px 48px; max-width: 1540px; margin: 0 auto; }
+  h1 { margin: 0 0 6px; font-size: 27px; }
+  h2 { margin: 0 0 12px; font-size: 19px; }
+  h3 { margin: 0 0 8px; font-size: 15px; }
+  p { margin: 0 0 8px; }
+  .subhead { color: var(--muted); max-width: 980px; font-size: 14px; }
+  .header-top { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; justify-content: space-between; }
+  .stats { display: grid; grid-template-columns: repeat(5, minmax(140px, 1fr)); gap: 10px; margin-top: 16px; }
+  .stat { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--white); }
+  .stat strong { display: block; font-size: 22px; margin: 3px 0 2px; }
+  .stat span.lbl { font-size: 12px; color: var(--muted); }
+  .swatch { display: inline-block; width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(0,0,0,.12); }
+  .panel { background: var(--white); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-bottom: 18px; }
+  .panel > h2 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .notes { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; }
+  .notes ul { margin: 0; padding-left: 20px; font-size: 13px; }
+  .toolbar { display: grid; grid-template-columns: repeat(3, minmax(170px, 1fr)) auto; gap: 12px; align-items: end; }
+  .control { display: grid; gap: 5px; }
+  .control label { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
+  select, input[type="text"], input[type="date"], input[type="time"], input[type="password"], textarea {
+    width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
+    font: inherit; font-size: 14px; min-height: 38px; padding: 7px 9px;
+  }
+  textarea { min-height: 60px; }
+  button {
+    border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
+    font: inherit; font-size: 14px; min-height: 38px; padding: 7px 12px; cursor: pointer;
+  }
+  button:hover { background: #f8fafc; }
+  button.primary { background: var(--ink); color: #fff; border-color: var(--ink); font-weight: 700; }
+  button.primary:hover { background: #2b3542; }
+  button.danger { color: #b42318; border-color: #f3c6c1; }
+  button.danger:hover { background: #fef3f2; }
+  button.small { min-height: 30px; font-size: 12.5px; padding: 4px 9px; }
+  .toolbar-status { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
+  .export-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-top: 2px; }
+  .export-status { color: var(--muted); font-size: 13px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+  .spacer { flex: 1 1 20px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .tag.ok { color: #14532d; border-color: #bbf7d0; background: #f0fdf4; }
+  .tag.edit { color: #7c2d12; border-color: #fed7aa; background: #fff7ed; }
+  .small { color: var(--muted); font-size: 13px; }
+  .is-hidden { display: none !important; }
+
+  /* Agenda */
+  .months { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .month { background: var(--white); border: 1px solid var(--line); border-radius: 8px; padding: 14px; min-width: 0; }
+  .month h2 { text-transform: capitalize; }
+  table { border-collapse: collapse; width: 100%; }
+  .calendar { table-layout: fixed; font-size: 12px; }
+  .calendar th { color: var(--muted); font-weight: 700; text-align: left; padding: 6px; border-bottom: 1px solid var(--line); font-size: 11px; }
+  .calendar td { height: 128px; vertical-align: top; border: 1px solid var(--line); padding: 4px; background: #fff; }
+  .calendar td.empty { background: #f1f3f6; }
+  .calendar td.today { outline: 2px solid var(--ink); outline-offset: -2px; }
+  .calendar td.no-visible-events .day-number { color: #b8c0cc; }
+  .calendar td.has-hl { background: #fffdf5; }
+  .day-number { font-weight: 700; color: var(--muted); margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; }
+  .day-add { border: 0; background: none; color: #98a2b3; font-size: 15px; line-height: 1; padding: 0 2px; min-height: 0; cursor: pointer; display: none; }
+  body.can-edit .day-add { display: block; }
+  .day-add:hover { color: var(--ink); background: none; }
+  .event {
+    border-left: 4px solid var(--edition); background: #eef2f8; padding: 4px 5px 5px; border-radius: 6px;
+    margin-bottom: 4px; overflow-wrap: anywhere; cursor: pointer; position: relative;
+  }
+  .event:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+  .section-edition { border-left-color: var(--edition); background: #eef2f8; }
+  .section-formations-traditionnelles { border-left-color: var(--formations-traditionnelles); background: #f7eee9; }
+  .section-bouquet-cairn { border-left-color: var(--bouquet-cairn); background: #e9f6f4; }
+  .section-evaluation-essms { border-left-color: var(--evaluation-essms); background: #f4eef8; }
+  .section-formations-ia { border-left-color: var(--formations-ia); background: #faecee; }
+  .event-meta { display: block; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 1px; }
+  .event-title { display: block; font-weight: 700; font-size: 11px; }
+  .event.modified::after { content: "modifiée"; position: absolute; top: 3px; right: 4px; font-size: 8.5px; font-weight: 700; color: #7c2d12; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 4px; padding: 0 3px; }
+
+  /* Statuts */
+  .status-badges { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+  .status-badges:empty { display: none; }
+  .st-badge { display: inline-block; font-size: 9px; font-weight: 700; line-height: 1; padding: 2px 4px; border-radius: 4px; color: #fff; background: var(--st); white-space: nowrap; }
+  .status-cell .st-badge { font-size: 11px; padding: 3px 6px; }
+  .st-empty { color: #98a2b3; font-size: 12px; }
+  .hl-options { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 12px; }
+  .hl-chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px 6px 8px; cursor: pointer; background: #fff; user-select: none; font-size: 13px; }
+  .hl-chip input { margin: 0; accent-color: var(--chip); }
+  .hl-chip .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--chip); }
+  .hl-chip:has(input:checked) { border-color: var(--chip); box-shadow: inset 0 0 0 1px var(--chip); }
+  .hl-chip .hl-count { color: var(--muted); font-size: 12px; }
+  body.hl-active .event:not(.status-hl) { opacity: .32; filter: grayscale(.6); }
+  body.hl-active .chronological-table tbody tr:not(.status-hl) { opacity: .45; }
+  body.hl-active.hl-only .event:not(.status-hl), body.hl-active.hl-only .chronological-table tbody tr:not(.status-hl) { display: none; }
+  .event.status-hl { box-shadow: 0 0 0 2px var(--hl, #F97316), 0 2px 8px rgba(0,0,0,.12); }
+  .chronological-table tbody tr.status-hl { box-shadow: inset 4px 0 0 var(--hl, #F97316); }
+
+  /* Liste */
+  .list-table th, .list-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 13px; }
+  .list-table th { color: var(--muted); font-size: 12px; text-transform: uppercase; }
+  .list-table tbody tr:hover { background: #f8fafc; }
+  .chronological-table tbody tr { cursor: pointer; }
+  .table-scroll { overflow-x: auto; }
+  .journal-table td { font-size: 12.5px; }
+  .journal-empty { color: var(--muted); font-size: 13px; }
+
+  /* Modale */
+  .backdrop { position: fixed; inset: 0; background: rgba(16,24,40,.45); display: flex; align-items: flex-start; justify-content: center; padding: 24px 12px; overflow-y: auto; z-index: 100; }
+  .modal { background: #fff; border-radius: 12px; box-shadow: 0 20px 50px rgba(16,24,40,.25); width: 100%; max-width: 520px; padding: 20px; }
+  .modal h3 { margin-bottom: 4px; font-size: 17px; }
+  .modal .sub { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+  .field { display: grid; gap: 5px; margin-bottom: 12px; }
+  .field > label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .checks { display: grid; gap: 6px; }
+  .checks label { display: flex; align-items: center; gap: 8px; font-size: 13.5px; cursor: pointer; }
+  .checks label .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--chip); }
+  .checks input { width: auto; min-height: 0; }
+  .modal-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  .modal-actions .left { margin-right: auto; }
+  .detail-line { font-size: 13.5px; margin-bottom: 6px; }
+  .detail-line b { display: inline-block; min-width: 86px; color: var(--muted); font-weight: 700; font-size: 12px; text-transform: uppercase; }
+  .inline-note { font-size: 12.5px; color: var(--muted); }
+  .error-text { color: #b42318; font-size: 13px; margin-top: 6px; }
+
+  /* Fiche rapide (popover) */
+  .pop {
+    position: absolute; z-index: 90; background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 12px 34px rgba(16,24,40,.2); padding: 12px 14px; width: 290px; font-size: 13px;
+  }
+  .pop h4 { margin: 0 0 2px; font-size: 13.5px; }
+  .pop .pop-meta { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .pop .pop-author { color: #7c2d12; font-size: 11.5px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 4px 6px; margin-bottom: 8px; }
+  .pop label.st { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; }
+  .pop label.st .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--chip); }
+  .pop input[type="checkbox"] { width: auto; min-height: 0; margin: 0; }
+  .pop .pop-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .pop .pop-actions button { min-height: 30px; font-size: 12.5px; padding: 4px 9px; }
+  .pop .pop-hint { color: var(--muted); font-size: 11.5px; margin-top: 8px; }
+  @media (max-width: 600px) {
+    .pop { position: fixed; left: 0 !important; right: 0; bottom: 0; top: auto !important; width: auto; border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(16,24,40,.25); }
+  }
+  .identity { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  /* Vue agenda mobile */
+  #agenda-mobile { display: none; }
+  .day-card { background: var(--white); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .day-card.is-empty { display: none; }
+  .day-card h3 { font-size: 13.5px; margin: 0 0 8px; text-transform: capitalize; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .day-card .event { margin-bottom: 6px; }
+  .day-card .event-title { font-size: 13px; }
+  .day-card .event-meta { font-size: 10.5px; }
+  .day-card.today { outline: 2px solid var(--ink); }
+
+  @media (max-width: 760px) {
+    #months { display: none; }
+    #agenda-mobile { display: grid; gap: 10px; margin-bottom: 18px; }
+    .list-table th, .list-table td { padding: 7px 8px; font-size: 12.5px; }
+  }
+  @media (max-width: 1100px) {
+    header, main { padding-left: 14px; padding-right: 14px; }
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .notes, .months, .toolbar { grid-template-columns: 1fr; }
+    .calendar td { height: 104px; padding: 3px; }
+    .event-title { font-size: 10px; }
+    .field-grid { grid-template-columns: 1fr; }
+  }
+  @media print {
+    body { background: #fff; }
+    header, main { padding: 10px; }
+    .panel.no-print, .backdrop { display: none !important; }
+    .months { grid-template-columns: 1fr; }
+    .month, .stat, .panel { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <div>
+        <h1>Champ Social &ndash; Planning des publications</h1>
+        <p class="subhead">Période du 1<sup>er</sup> septembre 2026 au 29 janvier 2027. Les dates Édition sont des contraintes prioritaires ; les publications récurrentes sont placées sur des créneaux hors dates Édition.</p>
+      </div>
+      <div class="identity">
+        <span class="tag" id="mode-tag">Lecture seule</span>
+        <button type="button" id="edit-toggle">Activer les modifications</button>
+        <button type="button" id="edit-lock" class="small" style="display:none">Verrouiller cet appareil</button>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <p class="small" id="sync-line" style="margin-top:12px"></p>
+  </header>
+  <main>
+    <section class="panel notes">
+      <div>
+        <h3>Règles appliquées</h3>
+        <ul>
+          <li>Les dates Édition déjà stockées, à partir du 1<sup>er</sup> septembre 2026, sont conservées.</li>
+          <li>Aucune publication récurrente n'est placée sur une date Édition.</li>
+          <li>Une journée hors Édition reçoit au maximum 2 promotions récurrentes.</li>
+          <li>Une même journée ne croise pas deux promotions destinées au même public-cible.</li>
+          <li>Une même journée ne croise pas deux publications du même canal, pour éviter deux Mailjet ou deux LinkedIn le même jour.</li>
+          <li>Les formations traditionnelles sont plafonnées à 20 publications ; l'évaluation ESSMS à 30 publications.</li>
+        </ul>
+        <p class="small">Ces règles ont servi au calcul initial. Les modifications faites ici ne sont pas contrôlées automatiquement : à vous de rester cohérent avec elles.</p>
+      </div>
+      <div>
+        <h3>Mode d'emploi</h3>
+        <p class="small">Tout le monde peut consulter, filtrer, exporter et ajouter les publications à son agenda.</p>
+        <p class="small">Un clic sur une publication ouvre sa fiche : statuts cochables directement, date, heure et sujet modifiables. Le code de modification n'est demandé qu'une fois par appareil, avec votre nom — ensuite les changements se font à la volée.</p>
+        <p class="small">Chaque changement indique qui l'a fait : le nom apparaît sur la fiche de la publication et dans le journal, en bas de page, y compris pour les membres qui ne font que consulter.</p>
+      </div>
+    </section>
+
+    <section class="panel no-print">
+      <h2>Affichage</h2>
+      <div class="toolbar" aria-label="Filtres et tri du planning">
+        <div class="control">
+          <label for="section-filter">Couleur / section</label>
+          <select id="section-filter"><option value="">Toutes les couleurs</option></select>
+        </div>
+        <div class="control">
+          <label for="channel-filter">Diffusion</label>
+          <select id="channel-filter">
+            <option value="">Mailjet et LinkedIn</option>
+            <option value="Mailjet">Mailjet</option>
+            <option value="LinkedIn">LinkedIn</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="sort-mode">Trier la liste</label>
+          <select id="sort-mode">
+            <option value="date">Date</option>
+            <option value="section">Couleur / section</option>
+            <option value="channel">Diffusion</option>
+          </select>
+        </div>
+        <button type="button" id="reset-controls">Réinitialiser</button>
+        <div class="toolbar-status" id="visible-count"></div>
+        <div class="export-actions" aria-label="Exports du récapitulatif filtré">
+          <button type="button" id="export-csv">Exporter CSV</button>
+          <button type="button" id="export-markdown">Exporter Markdown</button>
+          <button type="button" id="export-json">Exporter JSON</button>
+          <button type="button" id="export-ics">Exporter .ics (agenda)</button>
+          <button type="button" id="open-agenda-help">Synchroniser un agenda</button>
+          <span class="export-status" id="export-status">Les exports reprennent les filtres affichés.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel no-print">
+      <h2>Surbrillance des publications à venir</h2>
+      <div class="hl-options" id="hl-options" role="group" aria-label="Statuts à mettre en surbrillance"></div>
+      <div class="row">
+        <label class="row" style="gap:6px;font-size:13px">Options cumulées&nbsp;:
+          <select id="hl-mode" style="width:auto">
+            <option value="or">au moins un des statuts cochés (OU)</option>
+            <option value="and">tous les statuts cochés (ET)</option>
+          </select>
+        </label>
+        <label class="row" style="gap:6px;font-size:13px"><input type="checkbox" id="hl-only" style="width:auto;min-height:0"> Masquer les publications non surlignées</label>
+        <button type="button" id="hl-clear" class="small">Effacer la surbrillance</button>
+      </div>
+      <p class="small" id="hl-summary" style="margin-top:10px"></p>
+    </section>
+
+    <div class="months" id="months"></div>
+    <div id="agenda-mobile" aria-label="Agenda jour par jour"></div>
+
+    <section class="panel" style="margin-top:2px">
+      <h2>Liste chronologique <button type="button" class="small" id="add-event" style="display:none">+ Ajouter une publication</button></h2>
+      <div class="table-scroll">
+        <table class="list-table chronological-table">
+          <thead>
+            <tr><th>Date</th><th>Heure</th><th>Section</th><th>Canal</th><th>Sujet</th><th>Statut</th></tr>
+          </thead>
+          <tbody id="list-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Journal des modifications <span class="tag" id="journal-count"></span></h2>
+      <p class="small">Qui a modifié le planning, quand, et ce qui a changé.</p>
+      <div class="table-scroll">
+        <table class="list-table journal-table">
+          <thead><tr><th>Date</th><th>Auteur</th><th>Publication</th><th>Modification</th></tr></thead>
+          <tbody id="journal-body"></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button type="button" class="small" id="journal-export">Exporter le journal (CSV)</button>
+        <button type="button" class="small danger" id="journal-clear" style="display:none">Vider le journal</button>
+      </div>
+    </section>
+
+    <section class="panel no-print">
+      <h2>Stockage en ligne (GitHub)</h2>
+      <p class="small">Les modifications sont enregistrées dans un fichier de données du dépôt GitHub : tous les membres voient la même version, mise à jour en direct à l'ouverture de la page.</p>
+      <div class="field-grid">
+        <div class="field"><label for="gh-owner">Compte / organisation</label><input type="text" id="gh-owner" placeholder="mon-compte"></div>
+        <div class="field"><label for="gh-repo">Dépôt</label><input type="text" id="gh-repo" placeholder="planning-champ-social"></div>
+        <div class="field"><label for="gh-branch">Branche</label><input type="text" id="gh-branch" placeholder="main"></div>
+        <div class="field"><label for="gh-path">Fichier de données</label><input type="text" id="gh-path" placeholder="data/planning.json"></div>
+        <div class="field"><label for="gh-ics">Fichier .ics publié</label><input type="text" id="gh-ics" placeholder="data/planning.ics"></div>
+        <div class="field"><label for="gh-token">Jeton d'écriture (éditeurs)</label><input type="password" id="gh-token" placeholder="github_pat_..." autocomplete="off"></div>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <label class="row" style="gap:6px;font-size:13px"><input type="checkbox" id="gh-auto" checked style="width:auto;min-height:0"> Publier automatiquement chaque modification</label>
+      </div>
+      <div class="row">
+        <button type="button" id="gh-save-config">Enregistrer la configuration</button>
+        <button type="button" id="gh-pull">Recharger depuis GitHub</button>
+        <button type="button" id="gh-push" class="primary">Publier les modifications</button>
+        <button type="button" id="gh-forget" class="small">Oublier le jeton</button>
+        <span class="spacer"></span>
+        <span class="small" id="gh-status"></span>
+      </div>
+      <p class="inline-note" style="margin-top:10px">Le jeton reste dans votre navigateur (il n'est jamais écrit dans la page publiée). Utilisez un jeton « fine-grained » limité à ce dépôt, avec la permission <b>Contents : Read and write</b>. Les lecteurs n'ont besoin d'aucun jeton si le dépôt est public.</p>
+    </section>
+
+    <p class="small" id="footer-line"></p>
+  </main>
+<script>
+(() => {
+  "use strict";
+
+  const BASE_EVENTS = [{"id":"formations-traditionnelles-mailjet-1","date":"2026-09-01","start":"09:00","end":"09:45","allDay":false,"section":"formations-traditionnelles","channel":"Mailjet","subject":"Promotion des formations traditionnelles"},{"id":"evaluation-essms-linkedin-1","date":"2026-09-01","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-nouveautes-mailjet-1","date":"2026-09-02","start":"10:30","end":"11:15","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Nouveautés du bouquet Cairn"},{"id":"formations-traditionnelles-linkedin-1","date":"2026-09-02","start":"14:30","end":"15:15","allDay":false,"section":"formations-traditionnelles","channel":"LinkedIn","subject":"Promotion des formations traditionnelles"},{"id":"edition-1","date":"2026-09-03","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Récap nouveautés de rentrée"},{"id":"formations-ia-mailjet-1","date":"2026-09-04","start":"09:00","end":"09:45","allDay":false,"section":"formations-ia","channel":"Mailjet","subject":"Promotion des formations IA"},{"id":"bouquet-cairn-linkedin-1","date":"2026-09-04","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"formations-traditionnelles-mailjet-2","date":"2026-09-07","start":"09:00","end":"09:45","allDay":false,"section":"formations-traditionnelles","channel":"Mailjet","subject":"Promotion des formations traditionnelles"},{"id":"bouquet-cairn-mailjet-2","date":"2026-09-08","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-2","date":"2026-09-08","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"evaluation-essms-mailjet-2","date":"2026-09-09","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-traditionnelles-linkedin-2","date":"2026-09-09","start":"14:30","end":"15:15","allDay":false,"section":"formations-traditionnelles","channel":"LinkedIn","subject":"Promotion des formations traditionnelles"},{"id":"bouquet-cairn-linkedin-2","date":"2026-09-10","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"evaluation-essms-linkedin-2","date":"2026-09-11","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-traditionnelles-mailjet-3","date":"2026-09-14","start":"09:00","end":"09:45","allDay":false,"section":"formations-traditionnelles","channel":"Mailjet","subject":"Promotion des formations traditionnelles"},{"id":"bouquet-cairn-linkedin-3","date":"2026-09-14","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"bouquet-cairn-mailjet-3","date":"2026-09-15","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-3","date":"2026-09-15","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"evaluation-essms-mailjet-3","date":"2026-09-16","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-traditionnelles-linkedin-3","date":"2026-09-16","start":"14:30","end":"15:15","allDay":false,"section":"formations-traditionnelles","channel":"LinkedIn","subject":"Promotion des formations traditionnelles"},{"id":"bouquet-cairn-nouveautes-mailjet-3","date":"2026-09-17","start":"10:30","end":"11:15","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Nouveautés du bouquet Cairn"},{"id":"formations-ia-mailjet-3","date":"2026-09-18","start":"09:00","end":"09:45","allDay":false,"section":"formations-ia","channel":"Mailjet","subject":"Promotion des formations IA"},{"id":"evaluation-essms-linkedin-3","date":"2026-09-18","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-traditionnelles-mailjet-4","date":"2026-09-21","start":"09:00","end":"09:45","allDay":false,"section":"formations-traditionnelles","channel":"Mailjet","subject":"Promotion des formations traditionnelles"},{"id":"evaluation-essms-linkedin-4","date":"2026-09-21","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-mailjet-4","date":"2026-09-22","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-4","date":"2026-09-22","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"evaluation-essms-mailjet-4","date":"2026-09-23","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-traditionnelles-linkedin-4","date":"2026-09-23","start":"14:30","end":"15:15","allDay":false,"section":"formations-traditionnelles","channel":"LinkedIn","subject":"Promotion des formations traditionnelles"},{"id":"edition-2","date":"2026-09-24","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Livre socio"},{"id":"edition-3","date":"2026-09-25","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - livre socio"},{"id":"edition-4","date":"2026-09-28","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Livre socio"},{"id":"edition-5","date":"2026-09-29","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - livre socio"},{"id":"evaluation-essms-mailjet-5","date":"2026-09-30","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-ia-linkedin-5","date":"2026-09-30","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"bouquet-cairn-nouveautes-mailjet-5","date":"2026-10-01","start":"10:30","end":"11:15","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Nouveautés du bouquet Cairn"},{"id":"evaluation-essms-linkedin-5","date":"2026-10-01","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-ia-mailjet-5","date":"2026-10-02","start":"09:00","end":"09:45","allDay":false,"section":"formations-ia","channel":"Mailjet","subject":"Promotion des formations IA"},{"id":"bouquet-cairn-linkedin-5","date":"2026-10-02","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"bouquet-cairn-mailjet-6","date":"2026-10-05","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-traditionnelles-linkedin-6","date":"2026-10-05","start":"14:30","end":"15:15","allDay":false,"section":"formations-traditionnelles","channel":"LinkedIn","subject":"Promotion des formations traditionnelles"},{"id":"edition-6","date":"2026-10-06","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Post psy + mailing listes libraires DuB"},{"id":"edition-7","date":"2026-10-07","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn psy + DuB"},{"id":"evaluation-essms-mailjet-6","date":"2026-10-08","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-ia-linkedin-6","date":"2026-10-08","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"formations-traditionnelles-mailjet-6","date":"2026-10-09","start":"09:00","end":"09:45","allDay":false,"section":"formations-traditionnelles","channel":"Mailjet","subject":"Promotion des formations traditionnelles"},{"id":"bouquet-cairn-linkedin-6","date":"2026-10-09","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"edition-8","date":"2026-10-12","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Communication livre DuB"},{"id":"bouquet-cairn-nouveautes-mailjet-7","date":"2026-10-13","start":"10:30","end":"11:15","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Nouveautés du bouquet Cairn"},{"id":"formations-ia-linkedin-7","date":"2026-10-13","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"formations-ia-mailjet-7","date":"2026-10-14","start":"09:00","end":"09:45","allDay":false,"section":"formations-ia","channel":"Mailjet","subject":"Promotion des formations IA"},{"id":"evaluation-essms-linkedin-7","date":"2026-10-14","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"edition-9","date":"2026-10-15","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Livre PI"},{"id":"edition-10","date":"2026-10-16","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - livre PI"},{"id":"edition-11","date":"2026-10-19","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Post revue PSM 3"},{"id":"edition-12","date":"2026-10-20","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - revue PSM 3"},{"id":"bouquet-cairn-mailjet-8","date":"2026-10-21","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-traditionnelles-linkedin-8","date":"2026-10-21","start":"14:30","end":"15:15","allDay":false,"section":"formations-traditionnelles","channel":"LinkedIn","subject":"Promotion des formations traditionnelles"},{"id":"edition-13","date":"2026-10-22","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Livre socio"},{"id":"edition-14","date":"2026-10-23","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - livre socio"},{"id":"formations-traditionnelles-mailjet-9","date":"2026-10-26","start":"09:00","end":"09:45","allDay":false,"section":"formations-traditionnelles","channel":"Mailjet","subject":"Promotion des formations traditionnelles"},{"id":"bouquet-cairn-mailjet-9","date":"2026-10-27","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-9","date":"2026-10-27","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"evaluation-essms-mailjet-9","date":"2026-10-28","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-linkedin-9","date":"2026-10-28","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"bouquet-cairn-nouveautes-mailjet-9","date":"2026-10-29","start":"10:30","end":"11:15","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Nouveautés du bouquet Cairn"},{"id":"formations-traditionnelles-linkedin-9","date":"2026-10-29","start":"14:30","end":"15:15","allDay":false,"section":"formations-traditionnelles","channel":"LinkedIn","subject":"Promotion des formations traditionnelles"},{"id":"formations-ia-mailjet-9","date":"2026-10-30","start":"09:00","end":"09:45","allDay":false,"section":"formations-ia","channel":"Mailjet","subject":"Promotion des formations IA"},{"id":"evaluation-essms-linkedin-9","date":"2026-10-30","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-traditionnelles-mailjet-10","date":"2026-11-02","start":"09:00","end":"09:45","allDay":false,"section":"formations-traditionnelles","channel":"Mailjet","subject":"Promotion des formations traditionnelles"},{"id":"evaluation-essms-linkedin-10","date":"2026-11-02","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-mailjet-10","date":"2026-11-03","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-10","date":"2026-11-03","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"evaluation-essms-mailjet-10","date":"2026-11-04","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-linkedin-10","date":"2026-11-04","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"edition-15","date":"2026-11-05","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Mailing livre autisme"},{"id":"edition-16","date":"2026-11-06","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - livre autisme"},{"id":"formations-traditionnelles-mailjet-11","date":"2026-11-09","start":"09:00","end":"09:45","allDay":false,"section":"formations-traditionnelles","channel":"Mailjet","subject":"Promotion des formations traditionnelles"},{"id":"bouquet-cairn-mailjet-11","date":"2026-11-10","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-11","date":"2026-11-10","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"evaluation-essms-mailjet-11","date":"2026-11-11","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-traditionnelles-linkedin-11","date":"2026-11-11","start":"14:30","end":"15:15","allDay":false,"section":"formations-traditionnelles","channel":"LinkedIn","subject":"Promotion des formations traditionnelles"},{"id":"bouquet-cairn-nouveautes-mailjet-11","date":"2026-11-12","start":"10:30","end":"11:15","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Nouveautés du bouquet Cairn"},{"id":"evaluation-essms-linkedin-11","date":"2026-11-12","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-ia-mailjet-11","date":"2026-11-13","start":"09:00","end":"09:45","allDay":false,"section":"formations-ia","channel":"Mailjet","subject":"Promotion des formations IA"},{"id":"bouquet-cairn-linkedin-11","date":"2026-11-13","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"formations-traditionnelles-mailjet-12","date":"2026-11-16","start":"09:00","end":"09:45","allDay":false,"section":"formations-traditionnelles","channel":"Mailjet","subject":"Promotion des formations traditionnelles"},{"id":"evaluation-essms-linkedin-12","date":"2026-11-16","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"edition-17","date":"2026-11-17","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Livre philo"},{"id":"edition-18","date":"2026-11-18","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - livre philo"},{"id":"bouquet-cairn-mailjet-12","date":"2026-11-19","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-traditionnelles-linkedin-12","date":"2026-11-19","start":"14:30","end":"15:15","allDay":false,"section":"formations-traditionnelles","channel":"LinkedIn","subject":"Promotion des formations traditionnelles"},{"id":"evaluation-essms-mailjet-12","date":"2026-11-20","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-linkedin-12","date":"2026-11-20","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"formations-traditionnelles-mailjet-13","date":"2026-11-23","start":"09:00","end":"09:45","allDay":false,"section":"formations-traditionnelles","channel":"Mailjet","subject":"Promotion des formations traditionnelles"},{"id":"evaluation-essms-linkedin-13","date":"2026-11-23","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-nouveautes-mailjet-13","date":"2026-11-24","start":"10:30","end":"11:15","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Nouveautés du bouquet Cairn"},{"id":"formations-ia-linkedin-13","date":"2026-11-24","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"formations-ia-mailjet-13","date":"2026-11-25","start":"09:00","end":"09:45","allDay":false,"section":"formations-ia","channel":"Mailjet","subject":"Promotion des formations IA"},{"id":"bouquet-cairn-linkedin-13","date":"2026-11-25","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"edition-19","date":"2026-11-26","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Livre de l'AIRe"},{"id":"edition-20","date":"2026-11-27","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - livre de l'AIRe"},{"id":"bouquet-cairn-mailjet-14","date":"2026-12-01","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-14","date":"2026-12-01","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"evaluation-essms-mailjet-14","date":"2026-12-02","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"formations-traditionnelles-linkedin-14","date":"2026-12-02","start":"14:30","end":"15:15","allDay":false,"section":"formations-traditionnelles","channel":"LinkedIn","subject":"Promotion des formations traditionnelles"},{"id":"bouquet-cairn-linkedin-14","date":"2026-12-03","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"evaluation-essms-linkedin-14","date":"2026-12-04","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-nouveautes-mailjet-15","date":"2026-12-07","start":"10:30","end":"11:15","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Nouveautés du bouquet Cairn"},{"id":"formations-ia-linkedin-15","date":"2026-12-07","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"edition-21","date":"2026-12-08","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Livre psy"},{"id":"edition-22","date":"2026-12-09","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - livre psy"},{"id":"formations-ia-mailjet-15","date":"2026-12-10","start":"09:00","end":"09:45","allDay":false,"section":"formations-ia","channel":"Mailjet","subject":"Promotion des formations IA"},{"id":"bouquet-cairn-linkedin-15","date":"2026-12-10","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"edition-23","date":"2026-12-11","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet + LinkedIn","subject":"PSM 4 + post LinkedIn"},{"id":"bouquet-cairn-mailjet-16","date":"2026-12-15","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-16","date":"2026-12-15","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"evaluation-essms-mailjet-16","date":"2026-12-16","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-linkedin-16","date":"2026-12-17","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"evaluation-essms-linkedin-16","date":"2026-12-18","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-linkedin-17","date":"2026-12-21","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"bouquet-cairn-mailjet-17","date":"2026-12-22","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-17","date":"2026-12-22","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"evaluation-essms-mailjet-17","date":"2026-12-23","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-nouveautes-mailjet-17","date":"2026-12-24","start":"10:30","end":"11:15","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Nouveautés du bouquet Cairn"},{"id":"formations-ia-mailjet-17","date":"2026-12-25","start":"09:00","end":"09:45","allDay":false,"section":"formations-ia","channel":"Mailjet","subject":"Promotion des formations IA"},{"id":"evaluation-essms-linkedin-17","date":"2026-12-25","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-mailjet-18","date":"2026-12-29","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-18","date":"2026-12-29","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"evaluation-essms-mailjet-18","date":"2026-12-30","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-linkedin-18","date":"2026-12-31","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"evaluation-essms-linkedin-18","date":"2027-01-01","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-linkedin-19","date":"2027-01-04","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"bouquet-cairn-mailjet-19","date":"2027-01-05","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-19","date":"2027-01-05","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"evaluation-essms-mailjet-19","date":"2027-01-06","start":"09:00","end":"09:45","allDay":false,"section":"evaluation-essms","channel":"Mailjet","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-nouveautes-mailjet-19","date":"2027-01-07","start":"10:30","end":"11:15","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Nouveautés du bouquet Cairn"},{"id":"formations-ia-mailjet-19","date":"2027-01-08","start":"09:00","end":"09:45","allDay":false,"section":"formations-ia","channel":"Mailjet","subject":"Promotion des formations IA"},{"id":"evaluation-essms-linkedin-19","date":"2027-01-08","start":"14:30","end":"15:15","allDay":false,"section":"evaluation-essms","channel":"LinkedIn","subject":"Promotion de l'évaluation ESSMS"},{"id":"bouquet-cairn-mailjet-20","date":"2027-01-12","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-20","date":"2027-01-12","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"bouquet-cairn-linkedin-20","date":"2027-01-13","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"edition-24","date":"2027-01-14","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Psy +"},{"id":"edition-25","date":"2027-01-15","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - psy +"},{"id":"edition-26","date":"2027-01-18","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Livre travail social"},{"id":"edition-27","date":"2027-01-19","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - travail social"},{"id":"bouquet-cairn-mailjet-21","date":"2027-01-20","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-21","date":"2027-01-20","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"bouquet-cairn-nouveautes-mailjet-21","date":"2027-01-21","start":"10:30","end":"11:15","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Nouveautés du bouquet Cairn"},{"id":"formations-ia-mailjet-21","date":"2027-01-22","start":"09:00","end":"09:45","allDay":false,"section":"formations-ia","channel":"Mailjet","subject":"Promotion des formations IA"},{"id":"bouquet-cairn-linkedin-21","date":"2027-01-22","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"bouquet-cairn-mailjet-22","date":"2027-01-26","start":"09:00","end":"09:45","allDay":false,"section":"bouquet-cairn","channel":"Mailjet","subject":"Promotion du bouquet Cairn"},{"id":"formations-ia-linkedin-22","date":"2027-01-26","start":"14:30","end":"15:15","allDay":false,"section":"formations-ia","channel":"LinkedIn","subject":"Promotion des formations IA"},{"id":"bouquet-cairn-linkedin-22","date":"2027-01-27","start":"14:30","end":"15:15","allDay":false,"section":"bouquet-cairn","channel":"LinkedIn","subject":"Promotion du bouquet Cairn"},{"id":"edition-28","date":"2027-01-28","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"Mailjet","subject":"Livre enfants en exil"},{"id":"edition-29","date":"2027-01-29","start":"09:00","end":"09:45","allDay":true,"section":"edition","channel":"LinkedIn","subject":"Post LinkedIn - enfants en exil"}];
+  const PERIOD = { start: "2026-09-01", end: "2027-01-29" };
+  const EDIT_CODE = "Lucie";
+
+  const SECTIONS = [
+    { id: "edition", label: "Promotion de l'édition", color: "#355C9A" },
+    { id: "formations-traditionnelles", label: "Promotion des formations traditionnelles", color: "#A15C38" },
+    { id: "bouquet-cairn", label: "Promotion du bouquet Cairn", color: "#168078" },
+    { id: "evaluation-essms", label: "Promotion de l'évaluation ESSMS", color: "#7D4E9D" },
+    { id: "formations-ia", label: "Promotion des formations IA", color: "#B23A48" },
+  ];
+  const CHANNELS = ["Mailjet", "LinkedIn", "Mailjet + LinkedIn"];
+  const STATUSES = [
+    { id: "a-faire", label: "À faire", short: "À faire", color: "var(--st-a-faire)" },
+    { id: "programme", label: "Déjà programmé", short: "Programmé", color: "var(--st-programme)" },
+    { id: "a-publier", label: "À faire publier", short: "À publier", color: "var(--st-a-publier)" },
+    { id: "a-valider", label: "À faire valider", short: "À valider", color: "var(--st-a-valider)" },
+    { id: "validee", label: "Validée", short: "Validée", color: "var(--st-validee)" },
+  ];
+  const LS = {
+    state: "cs-planning-etat-v2",
+    gh: "cs-planning-github-v1",
+    token: "cs-planning-jeton-v1",
+    hl: "cs-planning-surbrillance-v1",
+    author: "cs-planning-auteur-v1",
+    unlock: "cs-planning-deverrouillage-v1",
+    auto: "cs-planning-auto-publication-v1",
+  };
+  const DEFAULT_GH = { owner: "jpfchampsocial-ctrl", repo: "planning-champ-social", branch: "main", path: "data/planning.json", ics: "data/planning.ics" };
+
+  /* ---------- Utilitaires ---------- */
+  const $ = (sel) => document.querySelector(sel);
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  const pad = (n) => String(n).padStart(2, "0");
+  const todayIso = () => { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
+  const sectionOf = (id) => SECTIONS.find((s) => s.id === id) || SECTIONS[0];
+  const MONTHS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  const DAYS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+  function readableDate(iso) {
+    const [y, m, d] = iso.split("-").map(Number);
+    const dt = new Date(y, m - 1, d);
+    return DAYS[dt.getDay()] + " " + d + " " + MONTHS[m - 1] + " " + y;
+  }
+  function frDateTime(ts) {
+    const d = new Date(ts);
+    return pad(d.getDate()) + "/" + pad(d.getMonth() + 1) + "/" + d.getFullYear() + " à " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
+  function safeParse(txt, fallback) { try { const v = JSON.parse(txt); return v == null ? fallback : v; } catch (e) { return fallback; } }
+  function lsGet(key, fallback) { try { return safeParse(localStorage.getItem(key), fallback); } catch (e) { return fallback; } }
+  function lsSet(key, value) { try { localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value)); } catch (e) {} }
+
+  /* ---------- État partagé ---------- */
+  function emptyState() {
+    return { schema: 2, updatedAt: "", updatedBy: "", overrides: {}, added: [], deleted: [], statuses: {}, journal: [] };
+  }
+  function normalizeState(raw) {
+    const s = Object.assign(emptyState(), raw || {});
+    s.overrides = s.overrides && typeof s.overrides === "object" ? s.overrides : {};
+    s.statuses = s.statuses && typeof s.statuses === "object" ? s.statuses : {};
+    s.added = Array.isArray(s.added) ? s.added : [];
+    s.deleted = Array.isArray(s.deleted) ? s.deleted : [];
+    s.journal = Array.isArray(s.journal) ? s.journal : [];
+    return s;
+  }
+  let state = normalizeState(lsGet(LS.state, null));
+  let lastPulledUpdatedAt = state.updatedAt || "";
+  let dirty = false;
+
+  // Le code n'est demandé qu'une fois par appareil : le déverrouillage est mémorisé avec le nom de la personne.
+  const unlock = lsGet(LS.unlock, null);
+  let author = (unlock && unlock.auteur) || lsGet(LS.author, "") || "";
+  let canEdit = !!(unlock && unlock.auteur);
+
+  function persistLocal() { lsSet(LS.state, state); }
+
+  function touch(entry) {
+    const ts = new Date().toISOString();
+    state.updatedAt = ts;
+    state.updatedBy = author || "Anonyme";
+    if (entry) {
+      state.journal.unshift(Object.assign({ ts: ts, auteur: author || "Anonyme" }, entry));
+      state.journal = state.journal.slice(0, 500);
+    }
+    dirty = true;
+    persistLocal();
+    scheduleAutoPush();
+  }
+  let autoPushTimer = null;
+  function autoPushEnabled() {
+    const saved = lsGet(LS.auto, null);
+    return saved === null ? true : !!saved;
+  }
+  function scheduleAutoPush() {
+    if (!autoPushEnabled() || !canEdit || !ghToken()) return;
+    const cfg = ghConfig();
+    if (!cfg.owner || !cfg.repo) return;
+    if (autoPushTimer) window.clearTimeout(autoPushTimer);
+    autoPushTimer = window.setTimeout(() => { autoPushTimer = null; ghPush(true); }, 4000);
+  }
+
+  /* ---------- Événements effectifs ---------- */
+  function effectiveEvents() {
+    const out = [];
+    BASE_EVENTS.forEach((base) => {
+      if (state.deleted.indexOf(base.id) !== -1) return;
+      const ov = state.overrides[base.id];
+      out.push(Object.assign({}, base, ov || {}, { modified: !!ov }));
+    });
+    state.added.forEach((ev) => {
+      if (state.deleted.indexOf(ev.id) !== -1) return;
+      out.push(Object.assign({}, ev, { modified: true, isNew: true }));
+    });
+    out.forEach((ev) => { ev.sectionLabel = sectionOf(ev.section).label; });
+    return out;
+  }
+  function eventById(id) { return effectiveEvents().find((e) => e.id === id) || null; }
+  function statusesOf(id) {
+    const list = state.statuses[id];
+    return Array.isArray(list) ? STATUSES.filter((st) => list.indexOf(st.id) !== -1).map((st) => st.id) : [];
+  }
+  function statusLabels(id) { return statusesOf(id).map((sid) => STATUSES.find((st) => st.id === sid).label); }
+  function timeLabel(ev) { return ev.allDay ? "Journée" : ev.start + "-" + ev.end; }
+
+  /* ---------- Rendu : en-tête ---------- */
+  function renderStats(events) {
+    const box = $("#stats");
+    box.innerHTML = "";
+    SECTIONS.forEach((s) => {
+      const n = events.filter((e) => e.section === s.id).length;
+      const card = el("div", "stat");
+      const sw = el("span", "swatch"); sw.style.background = s.color;
+      card.appendChild(sw);
+      card.appendChild(el("strong", null, String(n)));
+      card.appendChild(el("span", "lbl", s.label));
+      box.appendChild(card);
+    });
+  }
+
+  /* ---------- Rendu : agenda ---------- */
+  function monthKeys(events) {
+    const dates = events.map((e) => e.date).concat([PERIOD.start, PERIOD.end]).sort();
+    const first = dates[0].slice(0, 7), last = dates[dates.length - 1].slice(0, 7);
+    const keys = [];
+    let [y, m] = first.split("-").map(Number);
+    const [ly, lm] = last.split("-").map(Number);
+    while (y < ly || (y === ly && m <= lm)) { keys.push(y + "-" + pad(m)); m += 1; if (m > 12) { m = 1; y += 1; } }
+    return keys;
+  }
+  function eventNode(ev) {
+    const node = el("div", "event section-" + ev.section);
+    node.tabIndex = 0;
+    node.setAttribute("role", "button");
+    node.dataset.eventId = ev.id;
+    node.dataset.section = ev.section;
+    node.dataset.channel = ev.channel;
+    node.dataset.date = ev.date;
+    node.dataset.time = ev.allDay ? "00:00" : ev.start;
+    if (ev.modified) node.classList.add("modified");
+    node.appendChild(el("span", "event-meta", (ev.allDay ? "Journée" : ev.start) + " · " + ev.channel.toUpperCase()));
+    node.appendChild(el("span", "event-title", ev.subject));
+    const badges = el("span", "status-badges");
+    renderBadges(badges, ev.id);
+    node.appendChild(badges);
+    return node;
+  }
+  function renderBadges(holder, id) {
+    holder.innerHTML = "";
+    statusesOf(id).forEach((sid) => {
+      const st = STATUSES.find((x) => x.id === sid);
+      const b = el("span", "st-badge", st.short);
+      b.style.setProperty("--st", st.color);
+      holder.appendChild(b);
+    });
+  }
+  function renderMonths(events) {
+    const host = $("#months");
+    host.innerHTML = "";
+    const byDate = {};
+    events.forEach((ev) => { (byDate[ev.date] = byDate[ev.date] || []).push(ev); });
+    const today = todayIso();
+    monthKeys(events).forEach((key) => {
+      const [y, m] = key.split("-").map(Number);
+      const section = el("section", "month");
+      section.appendChild(el("h2", null, MONTHS[m - 1] + " " + y));
+      const table = el("table", "calendar");
+      table.setAttribute("aria-label", "Calendrier " + MONTHS[m - 1] + " " + y);
+      const thead = el("thead");
+      const hr = el("tr");
+      ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"].forEach((d) => hr.appendChild(el("th", null, d)));
+      thead.appendChild(hr); table.appendChild(thead);
+      const tbody = el("tbody");
+      const firstDow = (new Date(y, m - 1, 1).getDay() + 6) % 7;
+      const daysInMonth = new Date(y, m, 0).getDate();
+      let tr = el("tr");
+      for (let i = 0; i < firstDow; i += 1) tr.appendChild(el("td", "empty"));
+      for (let day = 1; day <= daysInMonth; day += 1) {
+        const iso = y + "-" + pad(m) + "-" + pad(day);
+        const td = el("td");
+        if (iso === today) td.classList.add("today");
+        const dayNum = el("div", "day-number");
+        dayNum.appendChild(el("span", null, String(day)));
+        const addBtn = el("button", "day-add", "+");
+        addBtn.type = "button";
+        addBtn.title = "Ajouter une publication le " + readableDate(iso);
+        addBtn.dataset.addDate = iso;
+        dayNum.appendChild(addBtn);
+        td.appendChild(dayNum);
+        const holder = el("div", "day-events");
+        holder.dataset.dayEvents = "";
+        (byDate[iso] || []).sort(compareEvents).forEach((ev) => holder.appendChild(eventNode(ev)));
+        td.appendChild(holder);
+        tr.appendChild(td);
+        if ((firstDow + day) % 7 === 0) { tbody.appendChild(tr); tr = el("tr"); }
+      }
+      if (tr.children.length) {
+        while (tr.children.length < 7) tr.appendChild(el("td", "empty"));
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      section.appendChild(table);
+      host.appendChild(section);
+    });
+  }
+
+  function renderMobileAgenda(events) {
+    const host = $("#agenda-mobile");
+    host.innerHTML = "";
+    const byDate = {};
+    events.forEach((ev) => { (byDate[ev.date] = byDate[ev.date] || []).push(ev); });
+    const today = todayIso();
+    Object.keys(byDate).sort().forEach((iso) => {
+      const card = el("div", "day-card");
+      card.dataset.dayCard = iso;
+      if (iso === today) card.classList.add("today");
+      const head = el("h3", null, readableDate(iso));
+      if (iso === today) head.appendChild(el("span", "tag", "aujourd'hui"));
+      const addBtn = el("button", "small", "+");
+      addBtn.type = "button";
+      addBtn.dataset.addDate = iso;
+      addBtn.style.display = "none";
+      addBtn.className = "small day-add-mobile";
+      head.appendChild(addBtn);
+      card.appendChild(head);
+      const holder = el("div", "day-events");
+      holder.dataset.dayEvents = "";
+      byDate[iso].sort(compareEvents).forEach((ev) => holder.appendChild(eventNode(ev)));
+      card.appendChild(holder);
+      host.appendChild(card);
+    });
+    host.querySelectorAll(".day-add-mobile").forEach((b) => { b.style.display = canEdit ? "inline-block" : "none"; });
+  }
+
+  /* ---------- Rendu : liste ---------- */
+  function compareEvents(a, b) {
+    const mode = $("#sort-mode").value;
+    const sa = a.dataset ? a.dataset.section : a.section;
+    const sb = b.dataset ? b.dataset.section : b.section;
+    const ca = a.dataset ? a.dataset.channel : a.channel;
+    const cb = b.dataset ? b.dataset.channel : b.channel;
+    const da = a.dataset ? a.dataset.date : a.date;
+    const db = b.dataset ? b.dataset.date : b.date;
+    const ta = a.dataset ? a.dataset.time : (a.allDay ? "00:00" : a.start);
+    const tb = b.dataset ? b.dataset.time : (b.allDay ? "00:00" : b.start);
+    if (mode === "section") {
+      const d = SECTIONS.findIndex((s) => s.id === sa) - SECTIONS.findIndex((s) => s.id === sb);
+      if (d !== 0) return d;
+    }
+    if (mode === "channel") {
+      const d = CHANNELS.indexOf(ca) - CHANNELS.indexOf(cb);
+      if (d !== 0) return d;
+    }
+    return (da || "").localeCompare(db || "") || (ta || "").localeCompare(tb || "") || (sa || "").localeCompare(sb || "");
+  }
+  function renderList(events) {
+    const body = $("#list-body");
+    body.innerHTML = "";
+    events.slice().sort(compareEvents).forEach((ev) => {
+      const tr = el("tr");
+      tr.dataset.eventId = ev.id;
+      tr.dataset.section = ev.section;
+      tr.dataset.channel = ev.channel;
+      tr.dataset.date = ev.date;
+      tr.dataset.time = ev.allDay ? "00:00" : ev.start;
+      tr.appendChild(el("td", null, readableDate(ev.date)));
+      tr.appendChild(el("td", null, timeLabel(ev)));
+      tr.appendChild(el("td", null, ev.sectionLabel));
+      tr.appendChild(el("td", null, ev.channel));
+      const subject = el("td", null, ev.subject);
+      if (ev.modified) { const t = el("span", "tag edit", ev.isNew ? "ajoutée" : "modifiée"); t.style.marginLeft = "6px"; subject.appendChild(t); }
+      tr.appendChild(subject);
+      const stCell = el("td", "status-cell");
+      const holder = el("span", "status-badges");
+      renderBadges(holder, ev.id);
+      if (holder.childElementCount) stCell.appendChild(holder);
+      else stCell.appendChild(el("span", "st-empty", "—"));
+      tr.appendChild(stCell);
+      body.appendChild(tr);
+    });
+  }
+
+  /* ---------- Filtres et surbrillance ---------- */
+  function channelMatches(raw, wanted) { return !wanted || (raw || "").indexOf(wanted) !== -1; }
+  function applyFilters() {
+    const sec = $("#section-filter").value, chan = $("#channel-filter").value;
+    let shown = 0;
+    document.querySelectorAll("[data-event-id]").forEach((node) => {
+      const ok = (!sec || node.dataset.section === sec) && channelMatches(node.dataset.channel, chan);
+      node.classList.toggle("is-hidden", !ok);
+      if (ok && node.tagName === "TR") shown += 1;
+    });
+    document.querySelectorAll(".calendar td").forEach((cell) => {
+      const has = cell.querySelector(".event");
+      const vis = cell.querySelector(".event:not(.is-hidden)");
+      cell.classList.toggle("no-visible-events", Boolean(has && !vis));
+    });
+    document.querySelectorAll("[data-day-card]").forEach((card) => {
+      card.classList.toggle("is-empty", !card.querySelector(".event:not(.is-hidden)"));
+    });
+    $("#visible-count").textContent = shown + " publication(s) affichée(s) sur " + effectiveEvents().length + ".";
+    $("#export-status").textContent = "Prêt à exporter " + shown + " publication(s) selon les filtres affichés.";
+    applyHighlight();
+  }
+  function applyHighlight() {
+    const checks = Array.from(document.querySelectorAll("#hl-options input"));
+    const selected = checks.filter((c) => c.checked).map((c) => c.value);
+    const active = selected.length > 0;
+    const today = todayIso();
+    const counts = {}; STATUSES.forEach((st) => { counts[st.id] = 0; });
+    const counted = new Set(); const hlIds = new Set();
+    document.querySelectorAll("[data-event-id]").forEach((node) => {
+      const id = node.dataset.eventId;
+      const upcoming = (node.dataset.date || "") >= today;
+      const sts = statusesOf(id);
+      if (upcoming && node.tagName === "TR" && !counted.has(id)) { counted.add(id); sts.forEach((sid) => { counts[sid] += 1; }); }
+      let match = false;
+      if (active && upcoming) {
+        match = $("#hl-mode").value === "and"
+          ? selected.every((sid) => sts.indexOf(sid) !== -1)
+          : selected.some((sid) => sts.indexOf(sid) !== -1);
+      }
+      node.classList.toggle("status-hl", match);
+      if (match) {
+        const first = STATUSES.find((st) => selected.indexOf(st.id) !== -1 && sts.indexOf(st.id) !== -1);
+        node.style.setProperty("--hl", first.color);
+        if (!node.classList.contains("is-hidden")) hlIds.add(id);
+      } else { node.style.removeProperty("--hl"); }
+    });
+    document.querySelectorAll(".calendar td").forEach((cell) => {
+      cell.classList.toggle("has-hl", Boolean(cell.querySelector(".event.status-hl:not(.is-hidden)")));
+    });
+    document.body.classList.toggle("hl-active", active);
+    document.body.classList.toggle("hl-only", active && $("#hl-only").checked);
+    const onlyHl = active && $("#hl-only").checked;
+    document.querySelectorAll("[data-day-card]").forEach((card) => {
+      card.classList.toggle("is-empty", !card.querySelector(onlyHl ? ".event.status-hl:not(.is-hidden)" : ".event:not(.is-hidden)"));
+    });
+    document.querySelectorAll("[data-hl-count]").forEach((span) => { span.textContent = "(" + counts[span.dataset.hlCount] + ")"; });
+    $("#hl-summary").textContent = active
+      ? hlIds.size + " publication(s) à venir en surbrillance — statuts : " +
+        STATUSES.filter((st) => selected.indexOf(st.id) !== -1).map((st) => st.label).join($("#hl-mode").value === "and" ? " ET " : " OU ") + "."
+      : "Cochez un ou plusieurs statuts pour faire ressortir les publications à venir concernées. Cliquez sur une publication pour lui attribuer ses statuts.";
+    lsSet(LS.hl, { selected: selected, mode: $("#hl-mode").value, only: $("#hl-only").checked });
+  }
+
+  /* ---------- Journal ---------- */
+  function renderJournal() {
+    const body = $("#journal-body");
+    body.innerHTML = "";
+    $("#journal-count").textContent = state.journal.length + " modification(s)";
+    if (!state.journal.length) {
+      const tr = el("tr");
+      const td = el("td", "journal-empty", "Aucune modification enregistrée pour l'instant.");
+      td.colSpan = 4; tr.appendChild(td); body.appendChild(tr);
+      return;
+    }
+    state.journal.forEach((entry) => {
+      const tr = el("tr");
+      tr.appendChild(el("td", null, frDateTime(entry.ts)));
+      tr.appendChild(el("td", null, entry.auteur || "—"));
+      tr.appendChild(el("td", null, entry.publication || "—"));
+      tr.appendChild(el("td", null, entry.detail || entry.type || "—"));
+      body.appendChild(tr);
+    });
+  }
+
+  /* ---------- Rendu global ---------- */
+  function renderAll() {
+    const events = effectiveEvents();
+    renderStats(events);
+    renderMonths(events);
+    renderMobileAgenda(events);
+    renderList(events);
+    renderJournal();
+    applyFilters();
+    updateModeUi();
+    updateSyncLine();
+  }
+  function updateModeUi() {
+    document.body.classList.toggle("can-edit", canEdit);
+    $("#mode-tag").textContent = canEdit ? "Modifications activées — " + author : "Lecture seule";
+    $("#mode-tag").className = canEdit ? "tag edit" : "tag";
+    $("#edit-toggle").textContent = canEdit ? "Changer de nom" : "Activer les modifications";
+    $("#edit-lock").style.display = canEdit ? "inline-block" : "none";
+    $("#add-event").style.display = canEdit ? "inline-block" : "none";
+    $("#journal-clear").style.display = canEdit ? "inline-block" : "none";
+  }
+  function updateSyncLine() {
+    const parts = [];
+    if (state.updatedAt) parts.push("Dernière modification le " + frDateTime(state.updatedAt) + (state.updatedBy ? " par " + state.updatedBy : "") + ".");
+    else parts.push("Planning d'origine, aucune modification enregistrée.");
+    if (dirty) parts.push("Modifications non publiées sur GitHub.");
+    $("#sync-line").textContent = parts.join(" ");
+    $("#footer-line").textContent = "Planning généré le 1 septembre 2026 · " + effectiveEvents().length + " publications · Période du 1er septembre 2026 au 29 janvier 2027.";
+  }
+
+  /* ---------- Modale générique ---------- */
+  let backdrop = null;
+  function closeModal() { if (backdrop) { backdrop.remove(); backdrop = null; } }
+  function openModal(build) {
+    closeModal();
+    backdrop = el("div", "backdrop");
+    const modal = el("div", "modal");
+    backdrop.appendChild(modal);
+    backdrop.addEventListener("mousedown", (e) => { if (e.target === backdrop) closeModal(); });
+    document.body.appendChild(backdrop);
+    build(modal);
+    const first = modal.querySelector("input, select, textarea, button");
+    if (first) first.focus();
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  function field(labelText, node) {
+    const wrap = el("div", "field");
+    const lab = el("label", null, labelText);
+    if (node.id) lab.htmlFor = node.id;
+    wrap.appendChild(lab); wrap.appendChild(node);
+    return wrap;
+  }
+
+  /* ---------- Fiche rapide au clic (sans mode édition) ---------- */
+  let pop = null;
+  function closePop() { if (pop) { pop.remove(); pop = null; } }
+  function openEventPopover(anchorEl, id) {
+    const ev = eventById(id);
+    if (!ev) return;
+    closePop();
+    pop = el("div", "pop");
+    pop.setAttribute("role", "dialog");
+    pop.appendChild(el("h4", null, ev.subject));
+    pop.appendChild(el("div", "pop-meta", readableDate(ev.date) + " · " + timeLabel(ev) + " · " + ev.channel + " · " + ev.sectionLabel));
+    const last = state.journal.find((j) => j.id === ev.id);
+    if (last) pop.appendChild(el("div", "pop-author", "Modifiée par " + last.auteur + " le " + frDateTime(last.ts) + (last.detail ? " — " + last.detail : "")));
+
+    const current = statusesOf(ev.id);
+    if (canEdit) {
+      STATUSES.forEach((st) => {
+        const lab = el("label", "st");
+        const cb = el("input"); cb.type = "checkbox"; cb.value = st.id; cb.checked = current.indexOf(st.id) !== -1;
+        const dot = el("span", "dot"); dot.style.setProperty("--chip", st.color);
+        cb.addEventListener("change", () => {
+          const list = Array.from(pop.querySelectorAll("input[type=checkbox]:checked")).map((x) => x.value);
+          setStatuses(ev.id, list, false);
+          renderAll();
+          const anchor = document.querySelector('[data-event-id="' + CSS.escape(ev.id) + '"]');
+          if (anchor) placePop(anchor);
+        });
+        lab.appendChild(cb); lab.appendChild(dot); lab.appendChild(document.createTextNode(st.label));
+        pop.appendChild(lab);
+      });
+    } else {
+      const labels = statusLabels(ev.id);
+      pop.appendChild(el("div", "pop-meta", "Statut : " + (labels.length ? labels.join(", ") : "aucun")));
+    }
+
+    const actions = el("div", "pop-actions");
+    if (canEdit) {
+      const edit = el("button", null, "Modifier…"); edit.type = "button";
+      edit.addEventListener("click", () => { closePop(); openFullEditor(ev.id); });
+      actions.appendChild(edit);
+    } else {
+      const unlockBtn = el("button", null, "Modifier"); unlockBtn.type = "button";
+      unlockBtn.addEventListener("click", () => { closePop(); openEditGate(() => openEventPopover(document.querySelector('[data-event-id="' + CSS.escape(ev.id) + '"]'), ev.id)); });
+      actions.appendChild(unlockBtn);
+    }
+    const gcal = el("button", null, "Google Agenda"); gcal.type = "button";
+    gcal.addEventListener("click", () => window.open(googleCalendarUrl(ev), "_blank", "noopener"));
+    const ics = el("button", null, ".ics"); ics.type = "button";
+    ics.addEventListener("click", () => downloadText(slug(ev.subject) + ".ics", buildIcs([ev]), "text/calendar;charset=utf-8"));
+    const close = el("button", null, "Fermer"); close.type = "button";
+    close.addEventListener("click", closePop);
+    actions.appendChild(gcal); actions.appendChild(ics); actions.appendChild(close);
+    pop.appendChild(actions);
+    if (canEdit) pop.appendChild(el("div", "pop-hint", "Les statuts sont enregistrés dès que vous cochez, au nom de " + author + "."));
+    document.body.appendChild(pop);
+    placePop(anchorEl);
+  }
+  function placePop(anchorEl) {
+    if (!pop || !anchorEl) return;
+    const r = anchorEl.getBoundingClientRect();
+    const maxLeft = window.scrollX + document.documentElement.clientWidth - pop.offsetWidth - 10;
+    pop.style.left = Math.max(10, Math.min(r.left + window.scrollX, maxLeft)) + "px";
+    let top = r.bottom + window.scrollY + 6;
+    const overflow = top + pop.offsetHeight - (window.scrollY + window.innerHeight);
+    if (overflow > 0) top = Math.max(window.scrollY + 10, top - pop.offsetHeight - r.height - 12);
+    pop.style.top = top + "px";
+  }
+  function openFullEditor(id) {
+    const ev = eventById(id);
+    if (!ev || !canEdit) return;
+    openModal((modal) => {
+      modal.appendChild(el("h3", null, ev.subject));
+      modal.appendChild(el("div", "sub", "Modification enregistrée au nom de " + author + "."));
+      buildEditForm(modal, ev, false);
+    });
+  }
+  function buildEditForm(modal, ev, isNew) {
+    const dateInput = el("input"); dateInput.type = "date"; dateInput.id = "f-date"; dateInput.value = ev.date;
+    const allDay = el("input"); allDay.type = "checkbox"; allDay.id = "f-allday"; allDay.checked = !!ev.allDay; allDay.style.width = "auto"; allDay.style.minHeight = "0";
+    const startInput = el("input"); startInput.type = "time"; startInput.id = "f-start"; startInput.value = ev.start || "09:00";
+    const endInput = el("input"); endInput.type = "time"; endInput.id = "f-end"; endInput.value = ev.end || "09:45";
+    const sectionSel = el("select"); sectionSel.id = "f-section";
+    SECTIONS.forEach((s) => { const o = el("option", null, s.label); o.value = s.id; if (s.id === ev.section) o.selected = true; sectionSel.appendChild(o); });
+    const channelSel = el("select"); channelSel.id = "f-channel";
+    CHANNELS.forEach((c) => { const o = el("option", null, c); o.value = c; if (c === ev.channel) o.selected = true; channelSel.appendChild(o); });
+    const subjectInput = el("input"); subjectInput.type = "text"; subjectInput.id = "f-subject"; subjectInput.value = ev.subject;
+
+    modal.appendChild(field("Sujet de la publication", subjectInput));
+    const grid = el("div", "field-grid");
+    grid.appendChild(field("Date", dateInput));
+    const timeWrap = el("div", "field");
+    timeWrap.appendChild(el("label", null, "Heure"));
+    const timeRow = el("div", "row");
+    timeRow.appendChild(startInput);
+    timeRow.appendChild(endInput);
+    timeWrap.appendChild(timeRow);
+    const allDayLabel = el("label", "row");
+    allDayLabel.style.fontSize = "13px"; allDayLabel.style.gap = "6px";
+    allDayLabel.appendChild(allDay);
+    allDayLabel.appendChild(document.createTextNode("Publication sur la journée (sans heure)"));
+    timeWrap.appendChild(allDayLabel);
+    grid.appendChild(timeWrap);
+    modal.appendChild(grid);
+    const grid2 = el("div", "field-grid");
+    grid2.appendChild(field("Section", sectionSel));
+    grid2.appendChild(field("Diffusion", channelSel));
+    modal.appendChild(grid2);
+
+    const stWrap = el("div", "field");
+    stWrap.appendChild(el("label", null, "Statut (cumulable)"));
+    const checks = el("div", "checks");
+    const current = statusesOf(ev.id);
+    STATUSES.forEach((st) => {
+      const lab = el("label");
+      const cb = el("input"); cb.type = "checkbox"; cb.value = st.id; cb.checked = current.indexOf(st.id) !== -1;
+      const dot = el("span", "dot"); dot.style.setProperty("--chip", st.color);
+      lab.appendChild(cb); lab.appendChild(dot); lab.appendChild(document.createTextNode(st.label));
+      checks.appendChild(lab);
+    });
+    stWrap.appendChild(checks);
+    modal.appendChild(stWrap);
+
+    function syncTimeInputs() { startInput.disabled = allDay.checked; endInput.disabled = allDay.checked; }
+    allDay.addEventListener("change", syncTimeInputs);
+    syncTimeInputs();
+
+    const actions = el("div", "modal-actions");
+    if (!isNew) {
+      const del = el("button", "danger left", "Supprimer");
+      del.type = "button";
+      del.addEventListener("click", () => {
+        if (!window.confirm("Supprimer définitivement « " + ev.subject + " » du planning ?")) return;
+        deleteEvent(ev);
+        closeModal(); renderAll();
+      });
+      actions.appendChild(del);
+    }
+    const cancel = el("button", null, "Annuler");
+    cancel.type = "button";
+    cancel.addEventListener("click", closeModal);
+    const save = el("button", "primary", isNew ? "Ajouter la publication" : "Enregistrer");
+    save.type = "button";
+    save.addEventListener("click", () => {
+      const next = {
+        date: dateInput.value || ev.date,
+        allDay: allDay.checked,
+        start: allDay.checked ? "09:00" : (startInput.value || "09:00"),
+        end: allDay.checked ? "09:45" : (endInput.value || "09:45"),
+        section: sectionSel.value,
+        channel: channelSel.value,
+        subject: (subjectInput.value || "").trim() || ev.subject,
+      };
+      const statuses = Array.from(checks.querySelectorAll("input:checked")).map((c) => c.value);
+      if (isNew) addEvent(next, statuses);
+      else updateEvent(ev, next, statuses);
+      closeModal(); renderAll();
+    });
+    actions.appendChild(cancel); actions.appendChild(save);
+    modal.appendChild(actions);
+  }
+  function openNewEventModal(date) {
+    const draft = {
+      id: "ajout-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6),
+      date: date || todayIso(), start: "09:00", end: "09:45", allDay: false,
+      section: SECTIONS[0].id, channel: CHANNELS[0], subject: "",
+    };
+    openModal((modal) => {
+      modal.appendChild(el("h3", null, "Nouvelle publication"));
+      modal.appendChild(el("div", "sub", "Elle sera ajoutée au planning et tracée dans le journal."));
+      buildEditForm(modal, draft, true);
+    });
+  }
+
+  /* ---------- Opérations sur les données ---------- */
+  const FIELD_LABELS = { date: "date", start: "heure de début", end: "heure de fin", allDay: "journée entière", section: "section", channel: "diffusion", subject: "sujet" };
+  function describeValue(key, value) {
+    if (key === "date") return readableDate(value);
+    if (key === "allDay") return value ? "oui" : "non";
+    if (key === "section") return sectionOf(value).label;
+    return String(value);
+  }
+  function updateEvent(ev, next, statuses) {
+    const changes = [];
+    Object.keys(next).forEach((key) => {
+      if (String(ev[key]) !== String(next[key])) changes.push(FIELD_LABELS[key] + " : " + describeValue(key, ev[key]) + " → " + describeValue(key, next[key]));
+    });
+    const before = statusesOf(ev.id).join(",");
+    setStatuses(ev.id, statuses, true);
+    if (before !== statuses.join(",")) {
+      changes.push("statut : " + (statusLabels(ev.id).join(", ") || "aucun"));
+    }
+    if (!changes.length) return;
+    const isAdded = state.added.some((a) => a.id === ev.id);
+    if (isAdded) {
+      state.added = state.added.map((a) => (a.id === ev.id ? Object.assign({}, a, next) : a));
+    } else {
+      state.overrides[ev.id] = Object.assign({}, state.overrides[ev.id] || {}, next);
+    }
+    touch({ type: "modification", id: ev.id, publication: next.subject, detail: changes.join(" ; ") });
+  }
+  function addEvent(next, statuses) {
+    const id = "ajout-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
+    state.added.push(Object.assign({ id: id }, next));
+    if (statuses && statuses.length) state.statuses[id] = statuses;
+    touch({ type: "ajout", id: id, publication: next.subject, detail: "publication ajoutée le " + readableDate(next.date) + " (" + next.channel + ")" });
+  }
+  function deleteEvent(ev) {
+    state.deleted.push(ev.id);
+    state.added = state.added.filter((a) => a.id !== ev.id);
+    delete state.overrides[ev.id];
+    delete state.statuses[ev.id];
+    touch({ type: "suppression", id: ev.id, publication: ev.subject, detail: "publication supprimée (" + readableDate(ev.date) + ")" });
+  }
+  function setStatuses(id, list, silent) {
+    if (list && list.length) state.statuses[id] = list;
+    else delete state.statuses[id];
+    if (!silent) {
+      const ev = eventById(id);
+      touch({ type: "statut", id: id, publication: ev ? ev.subject : id, detail: "statut : " + (statusLabels(id).join(", ") || "aucun") });
+    } else {
+      persistLocal();
+    }
+  }
+
+  /* ---------- Déverrouillage (une seule fois par appareil) ---------- */
+  function openEditGate(afterUnlock) {
+    openModal((modal) => {
+      modal.appendChild(el("h3", null, "Activer les modifications"));
+      modal.appendChild(el("div", "sub", "Code demandé une seule fois sur cet appareil. Votre nom accompagnera chaque modification, visible par tous les membres."));
+      const code = el("input"); code.type = "password"; code.id = "f-code"; code.autocomplete = "off";
+      const name = el("input"); name.type = "text"; name.id = "f-name"; name.value = author || "";
+      modal.appendChild(field("Code de modification", code));
+      modal.appendChild(field("Votre nom", name));
+      const err = el("p", "error-text"); err.style.display = "none";
+      modal.appendChild(err);
+      const actions = el("div", "modal-actions");
+      const cancel = el("button", null, "Annuler"); cancel.type = "button"; cancel.addEventListener("click", closeModal);
+      const ok = el("button", "primary", "Activer l'édition"); ok.type = "button";
+      function submit() {
+        if ((code.value || "").trim().toLowerCase() !== EDIT_CODE.toLowerCase()) {
+          err.textContent = "Code incorrect."; err.style.display = "block"; code.value = ""; code.focus(); return;
+        }
+        if (!(name.value || "").trim()) {
+          err.textContent = "Indiquez votre nom pour tracer les modifications."; err.style.display = "block"; name.focus(); return;
+        }
+        author = name.value.trim();
+        lsSet(LS.author, author);
+        lsSet(LS.unlock, { auteur: author, depuis: new Date().toISOString() });
+        canEdit = true;
+        closeModal(); renderAll();
+        if (typeof afterUnlock === "function") window.setTimeout(afterUnlock, 0);
+      }
+      ok.addEventListener("click", submit);
+      [code, name].forEach((input) => input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); }));
+      actions.appendChild(cancel); actions.appendChild(ok);
+      modal.appendChild(actions);
+    });
+  }
+
+  /* ---------- Agenda : Google, .ics ---------- */
+  function slug(text) {
+    return (text || "publication").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "publication";
+  }
+  function compactDate(iso) { return iso.replace(/-/g, ""); }
+  function addDays(iso, n) {
+    const [y, m, d] = iso.split("-").map(Number);
+    const dt = new Date(y, m - 1, d + n);
+    return dt.getFullYear() + "-" + pad(dt.getMonth() + 1) + "-" + pad(dt.getDate());
+  }
+  function googleCalendarUrl(ev) {
+    const dates = ev.allDay
+      ? compactDate(ev.date) + "/" + compactDate(addDays(ev.date, 1))
+      : compactDate(ev.date) + "T" + ev.start.replace(":", "") + "00/" + compactDate(ev.date) + "T" + ev.end.replace(":", "") + "00";
+    const params = new URLSearchParams({
+      action: "TEMPLATE",
+      text: "[" + ev.channel + "] " + ev.subject,
+      dates: dates,
+      ctz: "Europe/Paris",
+      details: ev.sectionLabel + " — Planning publications Champ Social" + (statusLabels(ev.id).length ? "\nStatut : " + statusLabels(ev.id).join(", ") : ""),
+    });
+    return "https://calendar.google.com/calendar/render?" + params.toString();
+  }
+  const VTIMEZONE = [
+    "BEGIN:VTIMEZONE", "TZID:Europe/Paris",
+    "BEGIN:DAYLIGHT", "TZOFFSETFROM:+0100", "TZOFFSETTO:+0200", "TZNAME:CEST",
+    "DTSTART:19700329T020000", "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU", "END:DAYLIGHT",
+    "BEGIN:STANDARD", "TZOFFSETFROM:+0200", "TZOFFSETTO:+0100", "TZNAME:CET",
+    "DTSTART:19701025T030000", "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU", "END:STANDARD",
+    "END:VTIMEZONE",
+  ];
+  function icsEscape(text) { return String(text).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n"); }
+  function foldLine(line) {
+    if (line.length <= 74) return line;
+    const parts = [];
+    let rest = line;
+    parts.push(rest.slice(0, 74));
+    rest = rest.slice(74);
+    while (rest.length) { parts.push(" " + rest.slice(0, 73)); rest = rest.slice(73); }
+    return parts.join("\r\n");
+  }
+  function buildIcs(events) {
+    const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
+    const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Champ Social//Planning publications//FR", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+      "X-WR-CALNAME:Champ Social — Publications", "X-WR-TIMEZONE:Europe/Paris"].concat(VTIMEZONE);
+    events.forEach((ev) => {
+      const labels = statusLabels(ev.id);
+      lines.push("BEGIN:VEVENT");
+      lines.push("UID:" + ev.id + "@planning.champ-social");
+      lines.push("DTSTAMP:" + stamp);
+      if (ev.allDay) {
+        lines.push("DTSTART;VALUE=DATE:" + compactDate(ev.date));
+        lines.push("DTEND;VALUE=DATE:" + compactDate(addDays(ev.date, 1)));
+      } else {
+        lines.push("DTSTART;TZID=Europe/Paris:" + compactDate(ev.date) + "T" + ev.start.replace(":", "") + "00");
+        lines.push("DTEND;TZID=Europe/Paris:" + compactDate(ev.date) + "T" + ev.end.replace(":", "") + "00");
+      }
+      lines.push("SUMMARY:" + icsEscape("[" + ev.channel + "] " + ev.subject));
+      lines.push("DESCRIPTION:" + icsEscape(ev.sectionLabel + (labels.length ? " — Statut : " + labels.join(", ") : "")));
+      lines.push("CATEGORIES:" + icsEscape(ev.sectionLabel));
+      lines.push("END:VEVENT");
+    });
+    lines.push("END:VCALENDAR");
+    return lines.map(foldLine).join("\r\n") + "\r\n";
+  }
+
+  /* ---------- Exports ---------- */
+  function visibleEvents() {
+    const ids = Array.from(document.querySelectorAll(".chronological-table tbody tr:not(.is-hidden)")).map((tr) => tr.dataset.eventId);
+    const all = effectiveEvents();
+    return ids.map((id) => all.find((e) => e.id === id)).filter(Boolean);
+  }
+  function csvValue(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }
+  function downloadText(filename, content, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const link = el("a");
+    link.href = url; link.download = filename;
+    document.body.appendChild(link); link.click(); link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function fileStamp() { return new Date().toISOString().slice(0, 16).replace(/[T:]/g, "-"); }
+  function recordOf(ev) {
+    return {
+      dateIso: ev.date, heureTri: ev.allDay ? "00:00" : ev.start, date: readableDate(ev.date), heure: timeLabel(ev),
+      section: ev.sectionLabel, diffusion: ev.channel, sujet: ev.subject, statut: statusLabels(ev.id).join(" + "),
+    };
+  }
+  function exportFiltered(format) {
+    const events = visibleEvents().sort(compareEvents);
+    const records = events.map(recordOf);
+    const base = "planning-champ-social-" + fileStamp();
+    if (format === "csv") {
+      const header = ["Date ISO", "Heure tri", "Date", "Heure", "Section", "Diffusion", "Sujet", "Statut"];
+      const rows = records.map((r) => [r.dateIso, r.heureTri, r.date, r.heure, r.section, r.diffusion, r.sujet, r.statut].map(csvValue).join(","));
+      downloadText(base + ".csv", "\ufeff" + [header.map(csvValue).join(","), ...rows].join("\r\n") + "\r\n", "text/csv;charset=utf-8");
+    } else if (format === "markdown") {
+      const lines = ["# Planning publications Champ Social", "", "- Publications exportées : " + records.length, "",
+        "| Date ISO | Date | Heure | Section | Diffusion | Sujet | Statut |", "|---|---|---|---|---|---|---|"];
+      records.forEach((r) => lines.push("| " + [r.dateIso, r.date, r.heure, r.section, r.diffusion, r.sujet, r.statut].map((v) => String(v).replace(/\|/g, "\\|")).join(" | ") + " |"));
+      downloadText(base + ".md", lines.join("\n") + "\n", "text/markdown;charset=utf-8");
+    } else if (format === "ics") {
+      downloadText(base + ".ics", buildIcs(events), "text/calendar;charset=utf-8");
+    } else {
+      downloadText(base + ".json", JSON.stringify({ titre: "Planning publications Champ Social", total: records.length, publications: records }, null, 2), "application/json;charset=utf-8");
+    }
+    $("#export-status").textContent = records.length + " publication(s) exportée(s).";
+  }
+  function exportJournal() {
+    const header = ["Date", "Auteur", "Type", "Publication", "Modification"];
+    const rows = state.journal.map((j) => [frDateTime(j.ts), j.auteur, j.type, j.publication, j.detail].map(csvValue).join(","));
+    downloadText("journal-planning-" + fileStamp() + ".csv", "\ufeff" + [header.map(csvValue).join(","), ...rows].join("\r\n") + "\r\n", "text/csv;charset=utf-8");
+  }
+
+  /* ---------- Aide agenda ---------- */
+  function openAgendaHelp() {
+    const cfg = ghConfig();
+    const icsUrl = cfg.owner && cfg.repo ? "https://raw.githubusercontent.com/" + cfg.owner + "/" + cfg.repo + "/" + cfg.branch + "/" + cfg.ics : "";
+    openModal((modal) => {
+      modal.appendChild(el("h3", null, "Synchroniser avec un agenda"));
+      modal.appendChild(el("div", "sub", "Trois façons de retrouver le planning dans votre agenda."));
+      const list = el("div");
+      [["1. Une publication à la fois", "Cliquez sur une publication, puis « Ajouter à Google Agenda » : la date, l'heure et le titre sont pré-remplis."],
+       ["2. Import ponctuel (.ics)", "Le bouton « Exporter .ics » télécharge la sélection filtrée. Importez ce fichier dans Google Agenda (Paramètres › Importer), Outlook ou Apple Calendrier. C'est une copie : elle ne se met pas à jour toute seule."],
+       ["3. Abonnement (mise à jour automatique)", "Le fichier .ics publié sur GitHub est mis à jour à chaque publication des modifications. Abonnez-vous à son adresse dans Google Agenda (Autres agendas › À partir de l'URL). L'agenda se rafraîchit ensuite tout seul, côté Google toutes les quelques heures."]].forEach((pair) => {
+        list.appendChild(el("h3", null, pair[0]));
+        list.appendChild(el("p", "small", pair[1]));
+      });
+      modal.appendChild(list);
+      if (icsUrl) {
+        const input = el("input"); input.type = "text"; input.value = icsUrl; input.readOnly = true;
+        modal.appendChild(field("Adresse d'abonnement (.ics)", input));
+        const copy = el("button", "small", "Copier l'adresse"); copy.type = "button";
+        copy.addEventListener("click", () => { input.select(); try { document.execCommand("copy"); copy.textContent = "Adresse copiée"; } catch (e) {} });
+        modal.appendChild(copy);
+      } else {
+        modal.appendChild(el("p", "inline-note", "Renseignez le dépôt GitHub dans le panneau « Stockage en ligne » pour obtenir l'adresse d'abonnement."));
+      }
+      const actions = el("div", "modal-actions");
+      const close = el("button", "primary", "Fermer"); close.type = "button"; close.addEventListener("click", closeModal);
+      actions.appendChild(close);
+      modal.appendChild(actions);
+    });
+  }
+
+  /* ---------- GitHub ---------- */
+  function ghConfig() { return Object.assign({}, DEFAULT_GH, lsGet(LS.gh, {})); }
+  function ghToken() { try { return localStorage.getItem(LS.token) || ""; } catch (e) { return ""; } }
+  function ghStatus(text) { $("#gh-status").textContent = text; }
+  function fillGhForm() {
+    const cfg = ghConfig();
+    $("#gh-owner").value = cfg.owner; $("#gh-repo").value = cfg.repo; $("#gh-branch").value = cfg.branch;
+    $("#gh-path").value = cfg.path; $("#gh-ics").value = cfg.ics; $("#gh-token").value = ghToken();
+  }
+  function b64encode(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = "";
+    bytes.forEach((b) => { bin += String.fromCharCode(b); });
+    return btoa(bin);
+  }
+  function b64decode(b64) {
+    const bin = atob(String(b64).replace(/\s/g, ""));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder("utf-8").decode(bytes);
+  }
+  function ghHeaders() {
+    const h = { "Accept": "application/vnd.github+json" };
+    const t = ghToken();
+    if (t) h.Authorization = "Bearer " + t;
+    return h;
+  }
+  function ghApiUrl(cfg, path) {
+    return "https://api.github.com/repos/" + cfg.owner + "/" + cfg.repo + "/contents/" + path.replace(/^\/+/, "");
+  }
+  async function ghFetchFile(cfg, path) {
+    const res = await fetch(ghApiUrl(cfg, path) + "?ref=" + encodeURIComponent(cfg.branch) + "&t=" + Date.now(), { headers: ghHeaders(), cache: "no-store" });
+    if (res.status === 404) return { missing: true };
+    if (!res.ok) throw new Error("GitHub " + res.status + " " + res.statusText);
+    const json = await res.json();
+    return { sha: json.sha, content: b64decode(json.content || "") };
+  }
+  async function ghReadData(cfg) {
+    // Plusieurs sources possibles : API GitHub (fiable, fraîche), fichier brut (sans quota),
+    // fichier servi par le site lui-même. On tente dans l'ordre, sans conclure trop vite à l'absence.
+    const cleanPath = cfg.path.replace(/^\/+/, "");
+    const sources = [];
+    if (ghToken()) sources.push("api");
+    sources.push("raw");
+    if (location.protocol === "http:" || location.protocol === "https:") sources.push("local");
+    if (!ghToken()) sources.push("api");
+    let sawMissing = false;
+    let lastError = null;
+    for (const source of sources) {
+      try {
+        if (source === "api") {
+          const file = await ghFetchFile(cfg, cfg.path);
+          if (file.missing) { sawMissing = true; continue; }
+          return file;
+        }
+        const url = source === "raw"
+          ? "https://raw.githubusercontent.com/" + cfg.owner + "/" + cfg.repo + "/" + cfg.branch + "/" + cleanPath + "?t=" + Date.now()
+          : cleanPath + "?t=" + Date.now();
+        const res = await fetch(url, { cache: "no-store" });
+        if (res.status === 404) { sawMissing = true; continue; }
+        if (!res.ok) { lastError = new Error("HTTP " + res.status); continue; }
+        return { content: await res.text() };
+      } catch (e) { lastError = e; }
+    }
+    if (sawMissing) return { missing: true };
+    throw lastError || new Error("source de données introuvable");
+  }
+  async function ghPutFile(cfg, path, content, message, sha) {
+    const res = await fetch(ghApiUrl(cfg, path), {
+      method: "PUT",
+      headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders()),
+      body: JSON.stringify({ message: message, content: b64encode(content), branch: cfg.branch, sha: sha || undefined }),
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error("GitHub " + res.status + " : " + txt.slice(0, 200));
+    }
+    return res.json();
+  }
+  async function ghPull(silent) {
+    const cfg = ghConfig();
+    if (!cfg.owner || !cfg.repo) { if (!silent) ghStatus("Renseignez le compte et le dépôt."); return; }
+    try {
+      ghStatus("Lecture du dépôt…");
+      const file = await ghReadData(cfg);
+      if (file.missing) { ghStatus("Aucun fichier de données pour l'instant : la première publication le créera."); return; }
+      const remote = normalizeState(safeParse(file.content, null));
+      if (dirty && remote.updatedAt !== lastPulledUpdatedAt) {
+        if (!window.confirm("Une version en ligne plus récente existe (modifiée par " + (remote.updatedBy || "?") + "). Charger cette version et perdre vos modifications locales non publiées ?")) {
+          ghStatus("Version en ligne ignorée : vos modifications locales sont conservées.");
+          return;
+        }
+      }
+      state = remote;
+      lastPulledUpdatedAt = state.updatedAt || "";
+      dirty = false;
+      persistLocal();
+      renderAll();
+      ghStatus("Planning à jour" + (state.updatedBy ? " (dernière modification : " + state.updatedBy + ")" : "") + ".");
+    } catch (e) {
+      ghStatus("Lecture impossible : " + e.message);
+    }
+  }
+  async function ghPush(auto) {
+    const cfg = ghConfig();
+    if (!cfg.owner || !cfg.repo) { if (!auto) ghStatus("Renseignez le compte et le dépôt."); return; }
+    if (!ghToken()) { if (!auto) ghStatus("Saisissez un jeton d'écriture pour publier."); return; }
+    if (!canEdit) { if (!auto) ghStatus("Activez les modifications avant de publier."); return; }
+    try {
+      ghStatus("Publication en cours…");
+      const current = await ghFetchFile(cfg, cfg.path);
+      if (!current.missing) {
+        const remote = normalizeState(safeParse(current.content, null));
+        if (remote.updatedAt && lastPulledUpdatedAt && remote.updatedAt !== lastPulledUpdatedAt) {
+          if (auto) {
+            ghStatus("Publication automatique suspendue : le planning en ligne a changé (par " + (remote.updatedBy || "?") + "). Rechargez, puis publiez.");
+            return;
+          }
+          if (!window.confirm("Le planning en ligne a été modifié depuis votre dernier chargement (par " + (remote.updatedBy || "?") + "). Publier quand même écrasera ces modifications. Continuer ?")) {
+            ghStatus("Publication annulée. Utilisez « Recharger depuis GitHub ».");
+            return;
+          }
+        }
+      }
+      await ghPutFile(cfg, cfg.path, JSON.stringify(state, null, 1), "Planning Champ Social — MAJ par " + (author || "?"), current.missing ? null : current.sha);
+      let icsNote = "";
+      try {
+        const icsFile = await ghFetchFile(cfg, cfg.ics);
+        await ghPutFile(cfg, cfg.ics, buildIcs(effectiveEvents().sort(compareEvents)), "Agenda Champ Social — MAJ par " + (author || "?"), icsFile.missing ? null : icsFile.sha);
+      } catch (e) { icsNote = " (agenda .ics non mis à jour : " + e.message + ")"; }
+      lastPulledUpdatedAt = state.updatedAt;
+      dirty = false;
+      updateSyncLine();
+      ghStatus("Modifications publiées" + (auto ? " automatiquement" : "") + " à " + frDateTime(new Date().toISOString()).split(" à ")[1] + icsNote + ".");
+    } catch (e) {
+      ghStatus("Publication impossible : " + e.message);
+    }
+  }
+
+  /* ---------- Initialisation de l'interface ---------- */
+  function buildSectionFilter() {
+    const sel = $("#section-filter");
+    SECTIONS.forEach((s) => { const o = el("option", null, s.label); o.value = s.id; sel.appendChild(o); });
+  }
+  function buildHlOptions() {
+    const box = $("#hl-options");
+    STATUSES.forEach((st) => {
+      const lab = el("label", "hl-chip");
+      lab.style.setProperty("--chip", st.color);
+      const cb = el("input"); cb.type = "checkbox"; cb.value = st.id;
+      const dot = el("span", "dot");
+      const count = el("span", "hl-count"); count.dataset.hlCount = st.id;
+      lab.appendChild(cb); lab.appendChild(dot); lab.appendChild(document.createTextNode(st.label + " ")); lab.appendChild(count);
+      box.appendChild(lab);
+      cb.addEventListener("change", applyHighlight);
+    });
+    const saved = lsGet(LS.hl, null);
+    if (saved) {
+      box.querySelectorAll("input").forEach((c) => { c.checked = (saved.selected || []).indexOf(c.value) !== -1; });
+      $("#hl-mode").value = saved.mode === "and" ? "and" : "or";
+      $("#hl-only").checked = !!saved.only;
+    }
+  }
+
+  buildSectionFilter();
+  buildHlOptions();
+  fillGhForm();
+
+  $("#section-filter").addEventListener("change", () => { renderAll(); });
+  $("#channel-filter").addEventListener("change", () => { renderAll(); });
+  $("#sort-mode").addEventListener("change", () => { renderAll(); });
+  $("#reset-controls").addEventListener("click", () => {
+    $("#section-filter").value = ""; $("#channel-filter").value = ""; $("#sort-mode").value = "date";
+    renderAll();
+  });
+  $("#hl-mode").addEventListener("change", applyHighlight);
+  $("#hl-only").addEventListener("change", applyHighlight);
+  $("#hl-clear").addEventListener("click", () => {
+    document.querySelectorAll("#hl-options input").forEach((c) => { c.checked = false; });
+    $("#hl-only").checked = false;
+    applyHighlight();
+  });
+  $("#export-csv").addEventListener("click", () => exportFiltered("csv"));
+  $("#export-markdown").addEventListener("click", () => exportFiltered("markdown"));
+  $("#export-json").addEventListener("click", () => exportFiltered("json"));
+  $("#export-ics").addEventListener("click", () => exportFiltered("ics"));
+  $("#open-agenda-help").addEventListener("click", openAgendaHelp);
+  $("#journal-export").addEventListener("click", exportJournal);
+  $("#journal-clear").addEventListener("click", () => {
+    if (!window.confirm("Vider complètement le journal des modifications ?")) return;
+    state.journal = [];
+    touch(null);
+    renderAll();
+  });
+  $("#edit-toggle").addEventListener("click", () => openEditGate(null));
+  $("#edit-lock").addEventListener("click", () => {
+    if (!window.confirm("Verrouiller cet appareil ? Le code sera redemandé à la prochaine modification.")) return;
+    canEdit = false;
+    try { localStorage.removeItem(LS.unlock); } catch (e) {}
+    closePop(); renderAll();
+  });
+  $("#add-event").addEventListener("click", () => openNewEventModal(todayIso()));
+  $("#gh-save-config").addEventListener("click", () => {
+    lsSet(LS.gh, {
+      owner: $("#gh-owner").value.trim(), repo: $("#gh-repo").value.trim(),
+      branch: $("#gh-branch").value.trim() || "main", path: $("#gh-path").value.trim() || DEFAULT_GH.path,
+      ics: $("#gh-ics").value.trim() || DEFAULT_GH.ics,
+    });
+    const token = $("#gh-token").value.trim();
+    try { if (token) localStorage.setItem(LS.token, token); } catch (e) {}
+    ghStatus("Configuration enregistrée dans ce navigateur.");
+    ghPull(true);
+  });
+  $("#gh-auto").checked = autoPushEnabled();
+  $("#gh-auto").addEventListener("change", () => {
+    lsSet(LS.auto, $("#gh-auto").checked);
+    ghStatus($("#gh-auto").checked ? "Chaque modification sera publiée automatiquement." : "Publication automatique désactivée : utilisez « Publier les modifications ».");
+  });
+  $("#gh-pull").addEventListener("click", () => ghPull(false));
+  $("#gh-push").addEventListener("click", () => ghPush(false));
+  $("#gh-forget").addEventListener("click", () => {
+    try { localStorage.removeItem(LS.token); } catch (e) {}
+    $("#gh-token").value = "";
+    ghStatus("Jeton effacé de ce navigateur.");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (pop && pop.contains(e.target)) return;
+    if (e.target.closest(".backdrop")) return;
+    const addBtn = e.target.closest("[data-add-date]");
+    if (addBtn) {
+      closePop();
+      if (canEdit) openNewEventModal(addBtn.dataset.addDate);
+      else openEditGate(() => openNewEventModal(addBtn.dataset.addDate));
+      return;
+    }
+    const node = e.target.closest("[data-event-id]");
+    if (node) { openEventPopover(node, node.dataset.eventId); return; }
+    closePop();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { closePop(); return; }
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const node = e.target.closest && e.target.closest(".event[data-event-id]");
+    if (node) { e.preventDefault(); openEventPopover(node, node.dataset.eventId); }
+  });
+  window.addEventListener("resize", () => closePop());
+
+  renderAll();
+  if (ghConfig().owner && ghConfig().repo) {
+    ghPull(true);
+    // Rafraîchissement discret toutes les 5 minutes, sauf si des modifications locales attendent d'être publiées.
+    window.setInterval(() => { if (!dirty && !backdrop) ghPull(true); }, 300000);
+  }
+})();
+</script>
+</body>
+</html>
