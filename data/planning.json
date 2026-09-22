@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "updatedAt": "2026-09-22T14:00:31.291Z",
+ "updatedAt": "2026-09-22T14:15:31.376Z",
  "updatedBy": "JP",
  "overrides": {},
  "added": [],
@@ -17,9 +17,20 @@
   ],
   "evaluation-essms-linkedin-4": [
    "validee"
+  ],
+  "evaluation-essms-mailjet-4": [
+   "programme"
   ]
  },
  "journal": [
+  {
+   "ts": "2026-09-22T14:15:31.376Z",
+   "auteur": "JP",
+   "type": "statut",
+   "id": "evaluation-essms-mailjet-4",
+   "publication": "Promotion de l'évaluation ESSMS",
+   "detail": "statut : Déjà programmé"
+  },
   {
    "ts": "2026-09-22T14:00:31.291Z",
    "auteur": "JP",
