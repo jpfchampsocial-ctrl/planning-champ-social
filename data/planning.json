@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "updatedAt": "2026-09-22T14:15:31.376Z",
+ "updatedAt": "2026-09-22T14:23:31.881Z",
  "updatedBy": "JP",
  "overrides": {},
  "added": [],
@@ -20,9 +20,20 @@
   ],
   "evaluation-essms-mailjet-4": [
    "programme"
+  ],
+  "formations-traditionnelles-linkedin-4": [
+   "programme"
   ]
  },
  "journal": [
+  {
+   "ts": "2026-09-22T14:23:31.881Z",
+   "auteur": "JP",
+   "type": "statut",
+   "id": "formations-traditionnelles-linkedin-4",
+   "publication": "Promotion des formations traditionnelles",
+   "detail": "statut : Déjà programmé"
+  },
   {
    "ts": "2026-09-22T14:15:31.376Z",
    "auteur": "JP",
