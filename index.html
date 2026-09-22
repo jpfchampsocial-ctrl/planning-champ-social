@@ -166,6 +166,9 @@
     .pop { position: fixed; left: 0 !important; right: 0; bottom: 0; top: auto !important; width: auto; border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(16,24,40,.25); }
   }
   .identity { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  /* Les réglages techniques n'existent que pour une personne identifiée avec le code. */
+  #publication-manuelle { display: none; }
+  body.can-edit #publication-manuelle { display: block; }
 
   /* Vue agenda mobile */
   #agenda-mobile { display: none; }
