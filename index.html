@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-  <meta name="googlebot" content="noindex, nofollow">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
 <title>Champ Social - Planning publications</title>
 <style>
   :root {
@@ -319,9 +319,26 @@
       </div>
     </section>
 
-    <section class="panel no-print">
-      <h2>Stockage en ligne (GitHub)</h2>
-      <p class="small">Les modifications sont enregistrées dans un fichier de données du dépôt GitHub : tous les membres voient la même version, mise à jour en direct à l'ouverture de la page.</p>
+    <details class="panel no-print" id="publication-manuelle">
+      <summary style="cursor:pointer;font-weight:700">Réglages éditeurs — publication et stockage</summary>
+      <h3 style="margin-top:12px">Publication manuelle (secours, sans jeton)</h3>
+      <p class="small">Vos modifications sont d'abord enregistrées dans votre navigateur. Pour que les autres membres les voient, il faut déposer le fichier de données dans le dépôt GitHub — la même manipulation que pour la page elle-même.</p>
+      <ol class="small" style="margin:0 0 12px; padding-left:20px">
+        <li>Cliquez sur <b>Télécharger le fichier de données</b> ci-dessous : votre navigateur enregistre <b>data/planning.json</b>.</li>
+        <li>Ouvrez <a href="https://github.com/jpfchampsocial-ctrl/planning-champ-social/upload/main" target="_blank" rel="noopener">la page de dépôt du dépôt GitHub</a>.</li>
+        <li>Glissez <b>data/planning.json</b> dans la zone de dépôt, puis cliquez sur <b>Commit changes</b>.</li>
+        <li>Une minute plus tard, tous les membres voient la nouvelle version en rechargeant la page.</li>
+      </ol>
+      <div class="row">
+        <button type="button" id="download-data" class="primary">Télécharger le fichier de données (planning.json)</button>
+        <button type="button" id="download-ics-file">Télécharger l'agenda (planning.ics)</button>
+        <span class="spacer"></span>
+        <span class="small" id="manual-status"></span>
+      </div>
+      <p class="inline-note" style="margin-top:10px">Le fichier <b>planning.ics</b> est facultatif : déposez-le au même endroit si vous voulez que les agendas abonnés reflètent les dernières modifications.</p>
+
+      <h3 style="margin-top:22px">Publication automatique (jeton GitHub)</h3>
+      <p class="small">Avec un jeton d'écriture, la page publie elle-même chaque modification et le dépôt manuel devient inutile.</p>
       <div class="field-grid">
         <div class="field"><label for="gh-owner">Compte / organisation</label><input type="text" id="gh-owner" placeholder="mon-compte"></div>
         <div class="field"><label for="gh-repo">Dépôt</label><input type="text" id="gh-repo" placeholder="planning-champ-social"></div>
@@ -342,7 +359,7 @@
         <span class="small" id="gh-status"></span>
       </div>
       <p class="inline-note" style="margin-top:10px">Le jeton reste dans votre navigateur (il n'est jamais écrit dans la page publiée). Utilisez un jeton « fine-grained » limité à ce dépôt, avec la permission <b>Contents : Read and write</b>. Les lecteurs n'ont besoin d'aucun jeton si le dépôt est public.</p>
-    </section>
+    </details>
 
     <p class="small" id="footer-line"></p>
   </main>
@@ -403,7 +420,7 @@
 
   /* ---------- État partagé ---------- */
   function emptyState() {
-    return { schema: 2, updatedAt: "", updatedBy: "", overrides: {}, added: [], deleted: [], statuses: {}, journal: [] };
+    return { schema: 2, updatedAt: "", updatedBy: "", overrides: {}, added: [], deleted: [], statuses: {}, journal: [], journalClearedAt: "" };
   }
   function normalizeState(raw) {
     const s = Object.assign(emptyState(), raw || {});
@@ -412,6 +429,7 @@
     s.added = Array.isArray(s.added) ? s.added : [];
     s.deleted = Array.isArray(s.deleted) ? s.deleted : [];
     s.journal = Array.isArray(s.journal) ? s.journal : [];
+    s.journalClearedAt = typeof s.journalClearedAt === "string" ? s.journalClearedAt : "";
     return s;
   }
   let state = normalizeState(lsGet(LS.state, null));
@@ -760,7 +778,7 @@
     const parts = [];
     if (state.updatedAt) parts.push("Dernière modification le " + frDateTime(state.updatedAt) + (state.updatedBy ? " par " + state.updatedBy : "") + ".");
     else parts.push("Planning d'origine, aucune modification enregistrée.");
-    if (dirty) parts.push("Modifications non publiées sur GitHub.");
+    if (dirty) parts.push("⚠ Modifications non publiées : elles ne sont visibles que sur cet appareil tant que le fichier de données n'est pas déposé dans le dépôt (voir « Publier les modifications » en bas de page).");
     $("#sync-line").textContent = parts.join(" ");
     $("#footer-line").textContent = "Planning généré le 1 septembre 2026 · " + effectiveEvents().length + " publications · Période du 1er septembre 2026 au 29 janvier 2027.";
   }
@@ -1296,6 +1314,22 @@
       ghStatus("Lecture impossible : " + e.message);
     }
   }
+  // L'historique appartient à tout le monde : on ne publie jamais un journal
+  // amputé des entrées faites depuis un autre appareil.
+  function journalKey(entry) { return (entry.ts || "") + "|" + (entry.id || "") + "|" + (entry.detail || ""); }
+  function mergeJournal(remote) {
+    if (!remote || !Array.isArray(remote.journal) || !remote.journal.length) return;
+    const clearedAt = state.journalClearedAt || "";
+    const seen = new Set(state.journal.map(journalKey));
+    remote.journal.forEach((entry) => {
+      if (clearedAt && (entry.ts || "") <= clearedAt) return;
+      const key = journalKey(entry);
+      if (!seen.has(key)) { state.journal.push(entry); seen.add(key); }
+    });
+    state.journal.sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
+    state.journal = state.journal.slice(0, 500);
+  }
+
   async function ghPush(auto) {
     const cfg = ghConfig();
     if (!cfg.owner || !cfg.repo) { if (!auto) ghStatus("Renseignez le compte et le dépôt."); return; }
@@ -1306,6 +1340,14 @@
       const current = await ghFetchFile(cfg, cfg.path);
       if (!current.missing) {
         const remote = normalizeState(safeParse(current.content, null));
+        mergeJournal(remote);
+        if (remote.updatedAt && !lastPulledUpdatedAt) {
+          if (auto) { ghStatus("Publication automatique suspendue : la version en ligne n'a pas encore été chargée. Cliquez sur « Recharger depuis GitHub »."); return; }
+          if (!window.confirm("Une version en ligne existe (modifiée par " + (remote.updatedBy || "?") + ") mais elle n'a pas été chargée sur cet appareil. Publier écrasera ses données. Continuer ?")) {
+            ghStatus("Publication annulée. Utilisez « Recharger depuis GitHub ».");
+            return;
+          }
+        }
         if (remote.updatedAt && lastPulledUpdatedAt && remote.updatedAt !== lastPulledUpdatedAt) {
           if (auto) {
             ghStatus("Publication automatique suspendue : le planning en ligne a changé (par " + (remote.updatedBy || "?") + "). Rechargez, puis publiez.");
@@ -1384,6 +1426,7 @@
   $("#journal-clear").addEventListener("click", () => {
     if (!window.confirm("Vider complètement le journal des modifications ?")) return;
     state.journal = [];
+    state.journalClearedAt = new Date().toISOString();
     touch(null);
     renderAll();
   });
@@ -1405,6 +1448,14 @@
     try { if (token) localStorage.setItem(LS.token, token); } catch (e) {}
     ghStatus("Configuration enregistrée dans ce navigateur.");
     ghPull(true);
+  });
+  $("#download-data").addEventListener("click", () => {
+    downloadText("planning.json", JSON.stringify(state, null, 1), "application/json;charset=utf-8");
+    $("#manual-status").textContent = "planning.json téléchargé — déposez-le dans le dépôt GitHub pour que les membres le voient.";
+  });
+  $("#download-ics-file").addEventListener("click", () => {
+    downloadText("planning.ics", buildIcs(effectiveEvents().sort(compareEvents)), "text/calendar;charset=utf-8");
+    $("#manual-status").textContent = "planning.ics téléchargé — à déposer au même endroit que planning.json.";
   });
   $("#gh-auto").checked = autoPushEnabled();
   $("#gh-auto").addEventListener("change", () => {
