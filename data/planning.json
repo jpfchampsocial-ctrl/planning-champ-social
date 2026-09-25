@@ -1,9 +1,20 @@
 {
  "schema": 2,
- "updatedAt": "2026-09-22T14:27:55.990Z",
+ "updatedAt": "2026-09-25T14:54:48.007Z",
  "updatedBy": "JP",
  "overrides": {},
- "added": [],
+ "added": [
+  {
+   "id": "ajout-muh30xxj-l21d",
+   "date": "2026-09-28",
+   "allDay": true,
+   "start": "09:00",
+   "end": "09:45",
+   "section": "formations-traditionnelles",
+   "channel": "LinkedIn",
+   "subject": "Formation Evaluation"
+  }
+ ],
  "deleted": [],
  "statuses": {
   "bouquet-cairn-mailjet-4": [
@@ -50,9 +61,20 @@
   ],
   "evaluation-essms-linkedin-3": [
    "validee"
+  ],
+  "ajout-muh30xxj-l21d": [
+   "a-faire"
   ]
  },
  "journal": [
+  {
+   "ts": "2026-09-25T14:54:48.007Z",
+   "auteur": "JP",
+   "type": "ajout",
+   "id": "ajout-muh30xxj-l21d",
+   "publication": "Formation Evaluation",
+   "detail": "publication ajoutée le lundi 28 septembre 2026 (LinkedIn)"
+  },
   {
    "ts": "2026-09-22T14:27:55.990Z",
    "auteur": "JP",
